@@ -37,20 +37,34 @@ mac:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
+  darkModeSupport: true
+  category: public.app-category.utilities
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
 dmg:
   artifactName: ${name}-${version}.${ext}
 linux:
+  executableName: ez2cursorfree
   target:
+    - pacman
     - AppImage
-    - snap
     - deb
+    - rpm
+    - snap
+    - tar.gz
   maintainer: electronjs.org
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
-electronDownload:
-  mirror: https://npmmirror.com/mirrors/electron/
+  provider: github
+  owner: "GalacticDevOps"
+  repo: "ez-cursor-free"
