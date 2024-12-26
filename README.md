@@ -4,6 +4,8 @@
 
 <div align="center">
 
+![License](https://img.shields.io/github/license/GalacticDevOps/ez-cursor-free)
+
 [![Release](https://img.shields.io/github/v/release/GalacticDevOps/ez-cursor-free?style=flat-square&logo=github&color=blue)](https://github.com/GalacticDevOps/ez-cursor-free/releases/latest)
 
 [![Stars](https://img.shields.io/github/stars/GalacticDevOps/ez-cursor-free?style=flat-square&logo=github)](https://github.com/GalacticDevOps/ez-cursor-free/stargazers)
