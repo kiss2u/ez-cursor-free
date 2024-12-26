@@ -50,6 +50,7 @@ jobs:
           files: |
             dist/*.exe
             dist/latest*.yml
+            !dist/*.blockmap
           token: ${{ secrets.GITHUB_TOKEN }}
           fail_on_unmatched_files: false
 
@@ -82,14 +83,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
-      # 分别构建 Intel 和 ARM 版本
-      - name: Build macOS Intel Package
-        run: pnpm run build:mac --x64
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Build macOS ARM Package
-        run: pnpm run build:mac --arm64
+      # 只构建一次，生成通用二进制
+      - name: Build Universal macOS Package
+        run: pnpm run build:mac
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
@@ -103,6 +99,7 @@ jobs:
           files: |
             dist/*.dmg
             dist/*.zip
+            !dist/*.blockmap
           token: ${{ secrets.GITHUB_TOKEN }}
           fail_on_unmatched_files: false
 
@@ -147,6 +144,7 @@ jobs:
             dist/*.AppImage
             dist/*.deb
             dist/*.rpm
+            !dist/*.blockmap
           token: ${{ secrets.GITHUB_TOKEN }}
           fail_on_unmatched_files: false
 

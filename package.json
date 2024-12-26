@@ -17,10 +17,10 @@
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
-    "build:mac": "electron-builder --mac --universal",
+    "build:mac": "npm run build && electron-builder --mac --universal",
     "build:linux": "npm run build && electron-builder --linux",
-    "build:mac-intel": "electron-builder --mac --x64",
-    "build:mac-arm": "electron-builder --mac --arm64"
+    "build:mac-intel": "npm run build && electron-builder --mac --x64",
+    "build:mac-arm": "npm run build && electron-builder --mac --arm64"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
