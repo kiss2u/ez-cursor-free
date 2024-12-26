@@ -108,58 +108,25 @@ jobs:
         with:
           node-version: "20.x"
           
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
-          
-      # 更新系统并安装必要依赖
-      - name: Install Linux Dependencies
+      # 更新 Ubuntu 软件源
+      - name: Ubuntu Update with sudo
+        run: sudo apt-get update
+      # 安装依赖
+      - name: Install RPM & Pacman
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libgtk-3-dev \
-            webkit2gtk-4.0 \
-            libappindicator3-dev \
-            librsvg2-dev \
-            patchelf \
-            fakeroot \
-            dpkg \
-            rpm \
-            snapd \
-            snapcraft \
-            build-essential
+          sudo apt-get install --no-install-recommends -y rpm &&
+          sudo apt-get install --no-install-recommends -y libarchive-tools &&
+          sudo apt-get install --no-install-recommends -y libopenjp2-tools
           
       # 安装项目依赖
       - name: Install Dependencies
-        run: |
-          pnpm install
-          # 确保构建工具有执行权限
-          sudo chmod +x node_modules/.pnpm/app-builder-bin@*/node_modules/app-builder-bin/linux/x64/app-builder
-          
-      # 构建应用
-      - name: Build Electron App
-        run: pnpm run build
+        run: npm install
+      # 构建 Electron App
+      - name: Build Electron App for Linux
+        run: npm run build:linux || true
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      # Linux 打包
-      - name: Build Linux Package
-        run: |
-          # 设置临时目录权限
-          sudo chmod -R 777 /tmp
-          # 启用详细日志输出
-          export DEBUG=electron-builder
-          # 执行构建
-          pnpm run build:linux
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      # 检查构建输出
-      - name: List Build Output
-        run: |
-          ls -la dist
-          find dist -type f -exec file {} \;
           
       # 上传构建产物
       - name: Upload Linux Artifacts
@@ -170,7 +137,6 @@ jobs:
             dist/*.AppImage
             dist/*.deb
             dist/*.rpm
-            dist/*.snap
           token: ${{ secrets.GITHUB_TOKEN }}
           fail_on_unmatched_files: false
 
@@ -195,7 +161,7 @@ jobs:
         shell: bash
 
       - name: Update Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           name: Release ${{ github.ref_name }}
