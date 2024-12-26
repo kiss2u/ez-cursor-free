@@ -19,7 +19,11 @@
 
 ## Screenshots
 
+<div align="center">
+
 ![alt text](/screenshots/ez2cursor.png)
+
+</div>
 
 # 🌏 Chinese
 
