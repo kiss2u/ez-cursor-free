@@ -113,6 +113,12 @@ jobs:
         with:
           version: latest
           
+      # 安装 Snapcraft
+      - name: Install Snapcraft
+        uses: samuelmeuli/action-snapcraft@v2
+        with:
+          snapcraft_token: ${{ secrets.SNAPCRAFT_TOKEN }}
+      
       # 更新 Linux 依赖安装
       - name: Install Linux Dependencies
         run: |
@@ -146,7 +152,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEBUG: electron-builder
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_TOKEN }}
           
+      # 新增：上传到 Snap Store
+      - name: Publish to Snap Store
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          for snap in dist/*.snap; do
+            if [ -f "$snap" ]; then
+              snapcraft upload "$snap" --release stable
+            fi
+          done
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_TOKEN }}
+        continue-on-error: true
+      
       - name: List Build Output
         run: |
           ls -la dist
