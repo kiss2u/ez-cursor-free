@@ -83,9 +83,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
-      # 只构建一次，生成通用二进制
-      - name: Build Universal macOS Package
-        run: pnpm run build:mac
+      # 分别构建 Intel 和 ARM 版本
+      - name: Build macOS Intel Package
+        run: pnpm run build:mac --x64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Build macOS ARM Package
+        run: pnpm run build:mac --arm64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
