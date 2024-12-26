@@ -146,18 +146,55 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整的 git 历史记录
       
       - name: Generate Release Notes
         id: release_notes
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          CHANGES=$(awk -v ver="$VERSION" '/^## \[?'$VERSION'\]?/ {p=1;print;next} /^## \[?[0-9]+\.[0-9]+\.[0-9]+/ {p=0} p' CHANGELOG.md || echo "")
-          if [ -z "$CHANGES" ]; then
-            CHANGES=$(git log -1 --pretty=format:"%B")
+          echo "Processing version: $VERSION"
+          
+          # 首先尝试从 CHANGELOG.md 获取
+          if [ -f CHANGELOG.md ]; then
+            CHANGES=$(awk -v ver="$VERSION" '
+              BEGIN { found=0; content="" }
+              /^## \[?'$VERSION'\]?/ { found=1; next }
+              /^## \[?[0-9]+\.[0-9]+\.[0-9]+/ { if (found) exit }
+              { if (found) content = content $0 "\n" }
+              END { printf "%s", content }
+            ' CHANGELOG.md)
           fi
-          echo "CHANGES<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          
+          # 如果 CHANGELOG 中没有找到，则使用 git log
+          if [ -z "$CHANGES" ]; then
+            echo "No changelog entry found, using git log..."
+            PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            if [ -n "$PREV_TAG" ]; then
+              CHANGES=$(git log --pretty=format:"* %s" $PREV_TAG..HEAD)
+            else
+              CHANGES=$(git log --pretty=format:"* %s" -n 10)
+            fi
+          fi
+          
+          # 如果还是空的，使用默认消息
+          if [ -z "$CHANGES" ]; then
+            CHANGES="Release version $VERSION"
+          fi
+          
+          # 添加版本标题
+          FINAL_NOTES="## Release v$VERSION\n\n$CHANGES"
+          
+          # 输出到 GITHUB_OUTPUT
+          {
+            echo "CHANGES<<EOF"
+            echo -e "$FINAL_NOTES"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+          
+          # 调试输出
+          echo "Generated release notes:"
+          echo -e "$FINAL_NOTES"
         shell: bash
 
       - name: Update Release
@@ -168,4 +205,5 @@ jobs:
           body: ${{ steps.release_notes.outputs.CHANGES }}
           draft: false
           prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }} 
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generate_release_notes: false  # 不使用 GitHub 自动生成的发布说明 
