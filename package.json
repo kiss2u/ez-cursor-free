@@ -1,6 +1,6 @@
 {
   "name": "ez-cursor-free",
-  "version": "1.0.1-alpha3",
+  "version": "1.0.1-beta1",
   "description": "An Electron application with Vue and TypeScript",
   "main": "./out/main/index.js",
   "author": "example.com",

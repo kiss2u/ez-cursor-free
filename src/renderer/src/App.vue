@@ -86,7 +86,7 @@ watch(setReadOnly, async (newValue) => {
     if (result.success) {
       showMessage(`已${newValue ? '启用' : '关闭'}只读模式`, 'warning')
     } else {
-      showMessage(result.error || '设置失��', 'error')
+      showMessage(result.error || '设置失败', 'error')
       setReadOnly.value = !newValue
     }
   } catch (error) {
