@@ -23,7 +23,7 @@
 
 # 🌏 Chinese
 
-一个帮助你管理 Cursor AI 机器 ID 的简单工具。
+一个帮助你管理 Cursor 机器ID 的简单工具。
 
 ## 功能特点
 
@@ -38,17 +38,17 @@
 1. 从 [Releases](https://github.com/GalacticDevOps/ez-cursor-free/releases) 页面下载最新版本
 2. 安装并运行应用
 3. 点击"修改 ID"生成新的 ID
-4. 重启 Cursor AI 以应用更改
+4. 重启 Cursor 以应用更改
 
 ## 注意事项
 
-- 修改 ID 前请确保已关闭 Cursor AI
+- 修改 ID 前请确保已关闭 Cursor
 - 建议修改后将配置文件设为只读模式
 - 如遇问题请查看错误提示或提交 Issue
 
 # 🌟 English
 
-A simple tool to help you manage Cursor AI's machine IDs.
+A simple tool to help you manage Cursor machine IDs.
 
 ## Features
 
@@ -63,11 +63,10 @@ A simple tool to help you manage Cursor AI's machine IDs.
 1. Download the latest release from the [Releases](https://github.com/GalacticDevOps/ez-cursor-free/releases) page
 2. Install and run the application
 3. Click "Modify ID" to generate new IDs
-4. Restart Cursor AI to apply changes
+4. Restart Cursor to apply changes
 
 ## ⭐  Star History or Repobeats
 
 [![Star History Chart](https://api.star-history.com/svg?repos=GalacticDevOps/ez-cursor-free&type=Date)](https://star-history.com/#GalacticDevOps/ez-cursor-free&Date)
 
-![Alt](https://repobeats.axiom.co/api/embed/cf2c904910356201459ef922b1573f3257ac7167.svg "Repobeats analytics image")
-
+![Alt](https://repobeats.axiom.co/api/embed/c302b33fe287c695b6f5b493b97abc4670c25c00.svg "Repobeats analytics image")
