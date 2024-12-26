@@ -1,5 +1,7 @@
 # 🚀 Ez2 Use Cursor Free Tools
 
+⚠️ This tool is only available to those who are unable to pay but urgently need to use it. If your region supports official cursor payment, please support the official purchase as much as your funds allow, cursor is a good ide.
+
 <div align="center">
 
 [![Release](https://img.shields.io/github/v/release/GalacticDevOps/ez-cursor-free?style=flat-square&logo=github&color=blue)](https://github.com/GalacticDevOps/ez-cursor-free/releases/latest)
