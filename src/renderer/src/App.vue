@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import type { CurrentIds } from '@renderer/types'
 
 const configPath = ref('')
@@ -15,6 +15,7 @@ const message = ref('')
 const setReadOnly = ref(false)
 const messageTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 const messageType = ref<'success' | 'error' | 'warning'>('success')
+const backupExists = ref(false)
 
 const showMessage = (msg: string, type: 'success' | 'error' | 'warning' = 'success') => {
   message.value = msg
@@ -101,6 +102,63 @@ const loadCurrentIds = async () => {
   }
 }
 
+const checkBackupExists = async () => {
+  try {
+    const result = await window.electron.ipcRenderer.invoke('check-backup-exists')
+    backupExists.value = result.exists
+  } catch (error) {
+    const err = error as Error
+    showMessage(err.message || '检查备份状态失败', 'error')
+  }
+}
+
+const backupStorage = async () => {
+  try {
+    const result = await window.electron.ipcRenderer.invoke('backup-storage')
+    if (result.success) {
+      showMessage('备份成功', 'success')
+      await checkBackupExists()
+    } else {
+      showMessage(result.error || '备份失败', 'error')
+    }
+  } catch (error) {
+    const err = error as Error
+    showMessage(err.message || '备份失败', 'error')
+  }
+}
+
+const restoreStorage = async () => {
+  if (!backupExists.value) {
+    showMessage('没有可用的备份', 'error')
+    return
+  }
+
+  try {
+    await checkFilePermission()
+    
+    if (setReadOnly.value) {
+      showMessage('文件为只读模式，请先取消只读设置', 'error')
+      return
+    }
+
+    const result = await window.electron.ipcRenderer.invoke('restore-storage')
+    if (result.success) {
+      showMessage('还原成功！请重启 Cursor 以使更改生效。', 'success')
+      await loadCurrentIds()
+    } else {
+      showMessage(result.error || '还原失败', 'error')
+    }
+  } catch (error) {
+    const err = error as Error
+    showMessage(err.message || '还原失败', 'error')
+  }
+}
+
+// 初始化时检查备份状态
+onMounted(async () => {
+  await checkBackupExists()
+})
+
 loadCurrentIds()
 </script>
 
@@ -152,6 +210,24 @@ loadCurrentIds()
         >
           {{ isLoading ? '修改中...' : '修改 ID' }}
         </button>
+        
+        <div class="backup-actions">
+          <button 
+            class="secondary-btn"
+            @click="backupStorage"
+            :disabled="isLoading || !currentIds.configPath"
+          >
+            备份配置
+          </button>
+          <button 
+            class="secondary-btn"
+            @click="restoreStorage"
+            :disabled="isLoading || setReadOnly || !backupExists"
+          >
+            还原配置
+          </button>
+        </div>
+        
         <label class="toggle-option">
           <input 
             type="checkbox" 
@@ -564,5 +640,30 @@ h2 {
     --scrollbar-thumb: #424244;
     --scrollbar-thumb-hover: #48484a;
   }
+}
+
+.backup-actions {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.secondary-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--button-secondary-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.secondary-btn:hover:not(:disabled) {
+  background: var(--button-secondary-hover);
+}
+
+.secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

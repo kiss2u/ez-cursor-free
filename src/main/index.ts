@@ -1,9 +1,9 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
+import { join, dirname } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { homedir } from 'os'
-import { existsSync, readFileSync, writeFileSync, chmodSync, statSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync, chmodSync, statSync, copyFileSync } from 'fs'
 import { platform } from 'os'
 import { StorageData, ModifyResult, CurrentIds } from './types'
 
@@ -169,6 +169,53 @@ app.whenReady().then(() => {
     }
   })
 
+  ipcMain.handle('backup-storage', async (): Promise<ModifyResult> => {
+    try {
+      const sourcePath = getStoragePath()
+      const backupPath = getBackupPath()
+      
+      if (!existsSync(sourcePath)) {
+        return { success: false, error: '配置文件不存在' }
+      }
+      
+      copyFileSync(sourcePath, backupPath)
+      return { success: true }
+    } catch (error) {
+      const err = error as Error
+      return { success: false, error: err.message || '备份失败' }
+    }
+  })
+
+  ipcMain.handle('restore-storage', async (): Promise<ModifyResult> => {
+    try {
+      const sourcePath = getBackupPath()
+      const targetPath = getStoragePath()
+      
+      if (!existsSync(sourcePath)) {
+        return { success: false, error: '备份文件不存在' }
+      }
+      
+      // 验证备份文件格式
+      try {
+        const content = readFileSync(sourcePath, 'utf8')
+        JSON.parse(content) // 验证 JSON 格式
+      } catch {
+        return { success: false, error: '备份文件格式错误' }
+      }
+      
+      copyFileSync(sourcePath, targetPath)
+      return { success: true }
+    } catch (error) {
+      const err = error as Error
+      return { success: false, error: err.message || '还原失败' }
+    }
+  })
+
+  ipcMain.handle('check-backup-exists', async (): Promise<{ exists: boolean }> => {
+    const backupPath = getBackupPath()
+    return { exists: existsSync(backupPath) }
+  })
+
   createWindow()
 
   app.on('activate', function () {
@@ -189,3 +236,9 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+
+// 获取备份文件路径
+function getBackupPath(): string {
+  const storagePath = getStoragePath()
+  return join(dirname(storagePath), 'storage.json.backup')
+}

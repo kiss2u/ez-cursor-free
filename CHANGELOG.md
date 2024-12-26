@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.1-alpha] - 2024-12-26
+## [1.0.1-alpha1] - 2024-12-26
 
 ### Added
 - 支持修改 Cursor 的相关机器码
+- 增加备份和还原功能
 - 支持设置配置文件只读模式
 - 自适应深色模式
 - 跨平台支持 (Windows, macOS, Linux)

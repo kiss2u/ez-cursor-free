@@ -113,13 +113,7 @@ jobs:
         with:
           version: latest
           
-      # 安装 Snapcraft
-      - name: Install Snapcraft
-        uses: samuelmeuli/action-snapcraft@v2
-        with:
-          snapcraft_token: ${{ secrets.SNAPCRAFT_TOKEN }}
-      
-      # 更新 Linux 依赖安装
+      # 更新系统并安装必要依赖
       - name: Install Linux Dependencies
         run: |
           sudo apt-get update
@@ -131,48 +125,43 @@ jobs:
             patchelf \
             fakeroot \
             dpkg \
-            rpm
+            rpm \
+            snapd \
+            snapcraft \
+            build-essential
           
+      # 安装项目依赖
       - name: Install Dependencies
         run: |
           pnpm install
-          # 确保 app-builder 有执行权限
-          chmod +x node_modules/.pnpm/app-builder-bin@*/node_modules/app-builder-bin/linux/x64/app-builder
-        
+          # 确保构建工具有执行权限
+          sudo chmod +x node_modules/.pnpm/app-builder-bin@*/node_modules/app-builder-bin/linux/x64/app-builder
+          
+      # 构建应用
       - name: Build Electron App
         run: pnpm run build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
+      # Linux 打包
       - name: Build Linux Package
         run: |
           # 设置临时目录权限
           sudo chmod -R 777 /tmp
+          # 启用详细日志输出
+          export DEBUG=electron-builder
+          # 执行构建
           pnpm run build:linux
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEBUG: electron-builder
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_TOKEN }}
           
-      # 新增：上传到 Snap Store
-      - name: Publish to Snap Store
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          for snap in dist/*.snap; do
-            if [ -f "$snap" ]; then
-              snapcraft upload "$snap" --release stable
-            fi
-          done
-        env:
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_TOKEN }}
-        continue-on-error: true
-      
+      # 检查构建输出
       - name: List Build Output
         run: |
           ls -la dist
-          # 显示更详细的错误信息（如果有）
           find dist -type f -exec file {} \;
           
+      # 上传构建产物
       - name: Upload Linux Artifacts
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
@@ -181,6 +170,7 @@ jobs:
             dist/*.AppImage
             dist/*.deb
             dist/*.rpm
+            dist/*.snap
           token: ${{ secrets.GITHUB_TOKEN }}
           fail_on_unmatched_files: false
 

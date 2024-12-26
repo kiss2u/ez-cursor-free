@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import { CurrentIds, ModifyResult } from '../main/types'
 
 // Custom APIs for renderer
 const api = {
@@ -22,4 +23,16 @@ if (process.contextIsolated) {
   window.electron = electronAPI
   // @ts-ignore (define in dts)
   window.api = api
+}
+
+export type ElectronAPI = {
+  ipcRenderer: {
+    invoke(channel: 'get-current-ids'): Promise<CurrentIds>
+    invoke(channel: 'modify-ids'): Promise<ModifyResult>
+    invoke(channel: 'set-file-permission', isReadOnly: boolean): Promise<ModifyResult>
+    invoke(channel: 'check-file-permission'): Promise<{ isReadOnly: boolean }>
+    invoke(channel: 'backup-storage'): Promise<ModifyResult>
+    invoke(channel: 'restore-storage'): Promise<ModifyResult>
+    invoke(channel: 'check-backup-exists'): Promise<{ exists: boolean }>
+  }
 }

@@ -43,14 +43,11 @@ dmg:
 linux:
   executableName: ez2cursorfree
   target:
-    - pacman
     - AppImage
     - deb
     - rpm
-    - snap
-    - tar.gz
-  maintainer: electronjs.org
   category: Utility
+  artifactName: "${productName}-${version}.${ext}"
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
