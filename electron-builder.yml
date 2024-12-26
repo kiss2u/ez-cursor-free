@@ -38,8 +38,25 @@ mac:
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
   darkModeSupport: true
+  # 添加 Intel 和 ARM 支持
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
+  # 启用通用二进制支持
+  artifactName: "${productName}-${version}-${arch}.${ext}"
+  # 添加 Intel 支持
+  x64ArchFiles: "**/*"
 dmg:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${name}-${version}-${arch}.${ext}
+  # 添加通用二进制支持
+  writeUpdateInfo: false
+  sign: false
 linux:
   executableName: ez2cursorfree
   target:

@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, net } from 'electron'
 import { join, dirname } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -6,6 +6,7 @@ import { homedir } from 'os'
 import { existsSync, readFileSync, writeFileSync, chmodSync, statSync, copyFileSync } from 'fs'
 import { platform } from 'os'
 import { StorageData, ModifyResult, CurrentIds } from './types'
+import { compare } from 'semver'
 
 function getStoragePath(): string {
   const home = homedir()
@@ -216,6 +217,15 @@ app.whenReady().then(() => {
     return { exists: existsSync(backupPath) }
   })
 
+  ipcMain.handle('check-updates', async () => {
+    return await checkForUpdates()
+  })
+
+  ipcMain.handle('open-release-page', async (_, url: string) => {
+    shell.openExternal(url)
+    return { success: true }
+  })
+
   createWindow()
 
   app.on('activate', function () {
@@ -241,4 +251,69 @@ app.on('window-all-closed', () => {
 function getBackupPath(): string {
   const storagePath = getStoragePath()
   return join(dirname(storagePath), 'storage.json.backup')
+}
+
+// 添加检查更新函数
+async function checkForUpdates(): Promise<{
+  hasUpdate: boolean
+  latestVersion: string
+  downloadUrl: string
+  releaseNotes: string
+} | null> {
+  try {
+    const request = net.request({
+      method: 'GET',
+      url: 'https://api.github.com/repos/GalacticDevOps/ez-cursor-free/releases/latest'
+    })
+
+    return new Promise((resolve, reject) => {
+      let data = ''
+      
+      request.on('response', (response) => {
+        response.on('data', (chunk) => {
+          data += chunk
+        })
+        
+        response.on('end', () => {
+          try {
+            const release = JSON.parse(data)
+            const currentVersion = app.getVersion()
+            const latestVersion = release.tag_name.replace('v', '')
+            
+            // 直接使用 semver 比较完整的版本号（包括预发布标签）
+            const hasUpdate = compare(latestVersion, currentVersion) > 0
+            
+            // 不要更新到预发布版本，除非当前也是预发布版本
+            const isCurrentPrerelease = currentVersion.includes('-')
+            const isLatestPrerelease = latestVersion.includes('-')
+            
+            // 只在以下情况显示更新：
+            // 1. 最新版本是正式版本且版本号更高
+            // 2. 当前是预发布版本，且最新版本更新（无论是否为预发布）
+            if (hasUpdate && (!isLatestPrerelease || isCurrentPrerelease)) {
+              resolve({
+                hasUpdate: true,
+                latestVersion,
+                downloadUrl: release.html_url,
+                releaseNotes: release.body || '暂无更新说明'
+              })
+            } else {
+              resolve(null)
+            }
+          } catch (error) {
+            reject(error)
+          }
+        })
+      })
+      
+      request.on('error', (error) => {
+        reject(error)
+      })
+      
+      request.end()
+    })
+  } catch (error) {
+    console.error('检查更新失败:', error)
+    return null
+  }
 }

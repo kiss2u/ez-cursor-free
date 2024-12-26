@@ -16,6 +16,12 @@ const setReadOnly = ref(false)
 const messageTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 const messageType = ref<'success' | 'error' | 'warning'>('success')
 const backupExists = ref(false)
+const updateInfo = ref<{
+  hasUpdate: boolean
+  latestVersion: string
+  downloadUrl: string
+  releaseNotes: string
+} | null>(null)
 
 const showMessage = (msg: string, type: 'success' | 'error' | 'warning' = 'success') => {
   message.value = msg
@@ -80,7 +86,7 @@ watch(setReadOnly, async (newValue) => {
     if (result.success) {
       showMessage(`已${newValue ? '启用' : '关闭'}只读模式`, 'warning')
     } else {
-      showMessage(result.error || '设置失败', 'error')
+      showMessage(result.error || '设置失��', 'error')
       setReadOnly.value = !newValue
     }
   } catch (error) {
@@ -154,9 +160,28 @@ const restoreStorage = async () => {
   }
 }
 
+const checkUpdate = async () => {
+  try {
+    const result = await window.electron.ipcRenderer.invoke('check-updates')
+    if (result) {
+      updateInfo.value = result
+      showMessage(`发现新版本 ${result.latestVersion}，点击查看详情`, 'warning')
+    }
+  } catch (error) {
+    console.error('检查更新失败:', error)
+  }
+}
+
+const openReleasePage = async () => {
+  if (updateInfo.value) {
+    await window.electron.ipcRenderer.invoke('open-release-page', updateInfo.value.downloadUrl)
+  }
+}
+
 // 初始化时检查备份状态
 onMounted(async () => {
   await checkBackupExists()
+  await checkUpdate()
 })
 
 loadCurrentIds()
@@ -257,6 +282,19 @@ loadCurrentIds()
         </button>
       </div>
     </div>
+
+    <div 
+      v-if="updateInfo" 
+      class="update-banner"
+      @click="openReleasePage"
+    >
+      <div class="update-content">
+        <svg class="update-icon" viewBox="0 0 24 24">
+          <path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1-2.73 2.71-2.73 7.08 0 9.79s7.15 2.71 9.88 0C18.32 15.65 19 14.08 19 12.1h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58s9.14-3.47 12.65 0L21 3v7.12zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8h1.5z"/>
+        </svg>
+        <span>发现新版本 {{ updateInfo.latestVersion }}，点击查看详情</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -299,6 +337,9 @@ body {
   flex-direction: column;
   width: 100%;
   height: 500px;
+  padding-top: 0;
+  position: relative;
+  height: 100vh;
 }
 
 .header {
@@ -306,6 +347,7 @@ body {
   margin-bottom: 8px;
   flex-shrink: 0;
   -webkit-app-region: drag;
+  padding-top: 24px;
 }
 
 .header * {
@@ -665,5 +707,43 @@ h2 {
 .secondary-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.update-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--apple-blue);
+  color: white;
+  padding: 4px 8px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 1000;
+  transition: background-color 0.2s;
+  font-size: 12px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.95;
+}
+
+.update-banner:hover {
+  background: var(--apple-blue-hover);
+  opacity: 1;
+}
+
+.update-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.update-icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
 }
 </style>
