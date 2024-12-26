@@ -60,9 +60,11 @@ dmg:
 linux:
   executableName: ez2cursorfree
   target:
+    - pacman
     - AppImage
     - deb
     - rpm
+    - tar.gz
   category: Utility
   artifactName: "${productName}-${version}.${ext}"
 appImage:
