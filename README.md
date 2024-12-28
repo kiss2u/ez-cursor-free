@@ -75,7 +75,7 @@ A simple tool to help you manage Cursor machine IDs.
 
 [![Star History Chart](https://api.star-history.com/svg?repos=GalacticDevOps/ez-cursor-free&type=Date)](https://star-history.com/#GalacticDevOps/ez-cursor-free&Date)
 
-![Alt](https://repobeats.axiom.co/api/embed/c302b33fe287c695b6f5b493b97abc4670c25c00.svg "Repobeats analytics image")
+![Alt](https://repobeats.axiom.co/api/embed/e093d035f86c7cc57f690c634df67bcf821455df.svg "Repobeats analytics image")
 
 ## Contributors
 
