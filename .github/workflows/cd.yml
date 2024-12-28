@@ -1,4 +1,4 @@
-name: Release
+name: cd for ez-cursor-free
 on:
   push:
     tags:
