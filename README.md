@@ -4,12 +4,13 @@
 
 <div align="center">
 
-![License](https://img.shields.io/github/license/GalacticDevOps/ez-cursor-free)
-[![Release](https://img.shields.io/github/v/release/GalacticDevOps/ez-cursor-free?style=flat-square&logo=github&color=blue)](https://github.com/GalacticDevOps/ez-cursor-free/releases/latest)
+<a title="AGPLv3" target="_blank" href="https://www.gnu.org/licenses/agpl-3.0.txt"><img src="http://img.shields.io/badge/license-AGPLv3-orange.svg?style=flat-square"></a>
+<a title="Releases" target="_blank" href="https://github.com/GalacticDevOps/ez-cursor-free/releases"><img src="https://img.shields.io/github/release/GalacticDevOps/ez-cursor-free.svg?style=flat-square&color=9CF"></a>
+<a title="Downloads" target="_blank" href="https://github.com/GalacticDevOps/ez-cursor-free/releases"><img src="https://img.shields.io/github/downloads/GalacticDevOps/ez-cursor-free/total.svg?style=flat-square&color=blueviolet"></a>
+
 [![Stars](https://img.shields.io/github/stars/GalacticDevOps/ez-cursor-free?style=flat-square&logo=github)](https://github.com/GalacticDevOps/ez-cursor-free/stargazers)
 [![Build Release](https://github.com/GalacticDevOps/ez-cursor-free/actions/workflows/release.yml/badge.svg)](https://github.com/GalacticDevOps/ez-cursor-free/actions/workflows/release.yml)
 
-![Downloads](https://img.shields.io/github/downloads/GalacticDevOps/ez-cursor-free/latest/total.svg)
 ![Issues](https://img.shields.io/github/issues/GalacticDevOps/ez-cursor-free)
 
 [中文](#-chinese) | [English](#-english)
@@ -75,3 +76,11 @@ A simple tool to help you manage Cursor machine IDs.
 [![Star History Chart](https://api.star-history.com/svg?repos=GalacticDevOps/ez-cursor-free&type=Date)](https://star-history.com/#GalacticDevOps/ez-cursor-free&Date)
 
 ![Alt](https://repobeats.axiom.co/api/embed/c302b33fe287c695b6f5b493b97abc4670c25c00.svg "Repobeats analytics image")
+
+## Contributors
+
+Welcome to join us and contribute code to ez-cursor-free together.
+
+<a href="https://github.com/GalacticDevOps/ez-cursor-free/graphs/contributors">
+   <img src="https://contrib.rocks/image?repo=GalacticDevOps/ez-cursor-free" />
+</a>
