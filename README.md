@@ -13,7 +13,7 @@
 
 ![Issues](https://img.shields.io/github/issues/GalacticDevOps/ez-cursor-free)
 
-[中文](#-chinese) | [English](#-english)
+[🌏 中文](#-chinese) | [🌟 English](#-english)
 
 <img src="https://ai-cursor.com/wp-content/uploads/2024/09/logo-cursor-ai-png.webp" alt="Cursor Logo" width="120"/>
 
@@ -70,6 +70,10 @@ A simple tool to help you manage Cursor machine IDs.
 2. Install and run the application
 3. Click "Modify ID" to generate new IDs
 4. Restart Cursor to apply changes
+
+### 📦 Manual Installation
+
+> Download the appropriate file for your system from [releases](https://github.com/GalacticDevOps/ez-cursor-free/releases/latest)
 
 ## ⭐  Star History or Repobeats
 
