@@ -1,6 +1,8 @@
 # 🚀 Ez2 Use Cursor Free Tools
 
-⚠️ This tool is only available to those who are unable to pay but urgently need to use it. If your region supports official cursor payment, please support the official purchase as much as your funds allow, cursor is a good ide.
+> 
+
+> ⚠️ This tool is only available to those who are unable to pay but urgently need to use it.
 
 <div align="center">
 
@@ -11,7 +13,7 @@
 [![Stars](https://img.shields.io/github/stars/GalacticDevOps/ez-cursor-free?style=flat-square&logo=github)](https://github.com/GalacticDevOps/ez-cursor-free/stargazers)
 [![Build Release](https://github.com/GalacticDevOps/ez-cursor-free/actions/workflows/release.yml/badge.svg)](https://github.com/GalacticDevOps/ez-cursor-free/actions/workflows/release.yml)
 
-![Issues](https://img.shields.io/github/issues/GalacticDevOps/ez-cursor-free)
+[![Issues](https://img.shields.io/github/issues/GalacticDevOps/ez-cursor-free)](https://github.com/GalacticDevOps/ez-cursor-free/issues)
 
 [🌏 中文](#-chinese) | [🌟 English](#-english)
 
