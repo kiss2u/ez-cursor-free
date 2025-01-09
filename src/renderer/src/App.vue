@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import type { CurrentIds } from '@renderer/types'
+import type { IElectronAPI } from '../../preload'
+
+declare global {
+  interface Window {
+    electron: IElectronAPI
+  }
+}
 
 const configPath = ref('')
 const currentIds = ref<CurrentIds>({
@@ -184,6 +191,10 @@ const startKeepAlive = async () => {
     isKeepAliveRunning.value = true
     showMessage('正在启动重置程序...', 'info')
     
+    // 清除之前的监听器
+    window.electron.ipcRenderer.removeListeners('keep-alive-output')
+    window.electron.ipcRenderer.removeListeners('keep-alive-error')
+    
     window.electron.ipcRenderer.on('keep-alive-output', (_, message) => {
       if (message.includes('注册成功')) {
         showMessage('重置成功！', 'success')
@@ -204,10 +215,14 @@ const startKeepAlive = async () => {
       showMessage(result.error || '重置程序执行失败', 'error')
     }
   } catch (error) {
-    const err = error as Error
-    showMessage(err.message || '执行出错', 'error')
+    const err = error as any
+    const errorMessage = err.error || err.message || '执行出错'
+    showMessage(errorMessage, 'error')
   } finally {
     isKeepAliveRunning.value = false
+    // 清除监听器
+    window.electron.ipcRenderer.removeListeners('keep-alive-output')
+    window.electron.ipcRenderer.removeListeners('keep-alive-error')
   }
 }
 

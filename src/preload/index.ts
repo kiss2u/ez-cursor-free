@@ -1,45 +1,41 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { electronAPI } from '@electron-toolkit/preload'
-import { CurrentIds, ModifyResult } from '../main/types'
+import { IElectronAPI } from './types'
 
-// Custom APIs for renderer
-const api = {
-  getCurrentIds: () => ipcRenderer.invoke('get-current-ids'),
-  modifyIds: (options: any) => ipcRenderer.invoke('modify-ids', options)
-}
+// 创建一个事件监听器管理器
+const listeners: { [key: string]: ((...args: any[]) => void)[] } = {}
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
-if (process.contextIsolated) {
-  try {
-    contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
-  } catch (error) {
-    console.error(error)
-  }
-} else {
-  // @ts-ignore (define in dts)
-  window.electron = electronAPI
-  // @ts-ignore (define in dts)
-  window.api = api
-}
-
-export type ElectronAPI = {
+// 自定义的 IPC 通信接口
+const api: IElectronAPI = {
+  platform: () => ipcRenderer.invoke('platform'),
   ipcRenderer: {
-    invoke(channel: 'get-current-ids'): Promise<CurrentIds>
-    invoke(channel: 'modify-ids'): Promise<ModifyResult>
-    invoke(channel: 'set-file-permission', isReadOnly: boolean): Promise<ModifyResult>
-    invoke(channel: 'check-file-permission'): Promise<{ isReadOnly: boolean }>
-    invoke(channel: 'backup-storage'): Promise<ModifyResult>
-    invoke(channel: 'restore-storage'): Promise<ModifyResult>
-    invoke(channel: 'check-backup-exists'): Promise<{ exists: boolean }>
-    invoke(channel: 'check-updates'): Promise<{
-      hasUpdate: boolean
-      latestVersion: string
-      downloadUrl: string
-      releaseNotes: string
-    } | null>
-    invoke(channel: 'open-release-page', url: string): Promise<{ success: boolean }>
+    invoke: (channel: string, ...args: any[]): Promise<any> => 
+      ipcRenderer.invoke(channel, ...args),
+    
+    on: (channel: string, callback: (...args: any[]) => void): void => {
+      if (!listeners[channel]) {
+        listeners[channel] = []
+      }
+      listeners[channel].push(callback)
+      ipcRenderer.on(channel, callback)
+    },
+    
+    removeListener: (channel: string, callback: (...args: any[]) => void): void => {
+      ipcRenderer.removeListener(channel, callback)
+    },
+    
+    removeListeners: (channel: string): void => {
+      if (listeners[channel]) {
+        listeners[channel].forEach(callback => {
+          ipcRenderer.removeListener(channel, callback)
+        })
+        listeners[channel] = []
+      }
+    }
   }
 }
+
+// 暴露 API
+contextBridge.exposeInMainWorld('electron', api)
+contextBridge.exposeInMainWorld('electronAPI', api)
+
+export type { IElectronAPI }

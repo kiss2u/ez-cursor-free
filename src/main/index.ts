@@ -9,6 +9,8 @@ import { StorageData, ModifyResult, CurrentIds } from './types'
 import { compare } from 'semver'
 import { spawn } from 'child_process'
 
+let mainWindow: BrowserWindow | null = null
+
 function getStoragePath(): string {
   const home = homedir()
   
@@ -45,7 +47,7 @@ function generateSqmId(): string {
 
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 550,
     show: false,
@@ -64,7 +66,7 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+    mainWindow?.show()
   })
 
   // 设置窗口大小限制
@@ -82,6 +84,11 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  // 添加窗口关闭事件处理
+  mainWindow.on('closed', () => {
+    mainWindow = null
+  })
 }
 
 // This method will be called when Electron has finished
@@ -234,14 +241,18 @@ app.whenReady().then(() => {
       try {
         const extDir = copyExtensionFiles()
         if (!extDir) {
-          reject({ success: false, error: '插件目录准备失败，请检查文件权限' })
-          return
+          return reject({ 
+            success: false, 
+            error: '插件目录准备失败，请检查文件权限' 
+          })
         }
 
         const pythonScriptPath = join(__dirname, '../../workspace/cursor_pro_keep_alive.py')
         if (!existsSync(pythonScriptPath)) {
-          reject({ success: false, error: 'Python脚本不存在' })
-          return
+          return reject({ 
+            success: false, 
+            error: 'Python脚本不存在' 
+          })
         }
 
         const pythonProcess = spawn('python', [
@@ -256,27 +267,26 @@ app.whenReady().then(() => {
             PYTHONUNBUFFERED: '1'  // 确保Python输出无缓冲
           }
         })
-        
-        pythonProcess.stdout.setEncoding('utf-8')
-        pythonProcess.stderr.setEncoding('utf-8')
-        
+
         let output = ''
         let error = ''
-        
+
         pythonProcess.stdout.on('data', (data) => {
           const message = data.toString()
           output += message
-          BrowserWindow.getAllWindows().forEach(window => {
-            window.webContents.send('keep-alive-output', message)
-          })
+          // 发送输出到渲染进程
+          if (mainWindow) {
+            mainWindow.webContents.send('keep-alive-output', message)
+          }
         })
 
         pythonProcess.stderr.on('data', (data) => {
           const message = data.toString()
           error += message
-          BrowserWindow.getAllWindows().forEach(window => {
-            window.webContents.send('keep-alive-error', message)
-          })
+          // 发送错误到渲染进程
+          if (mainWindow) {
+            mainWindow.webContents.send('keep-alive-error', message)
+          }
         })
 
         pythonProcess.on('close', (code) => {
