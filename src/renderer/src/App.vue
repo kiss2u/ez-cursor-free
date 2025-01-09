@@ -14,7 +14,7 @@ const isLoading = ref(false)
 const message = ref('')
 const setReadOnly = ref(false)
 const messageTimer = ref<ReturnType<typeof setTimeout> | null>(null)
-const messageType = ref<'success' | 'error' | 'warning'>('success')
+const messageType = ref<'success' | 'error' | 'warning' | 'info'>('success')
 const backupExists = ref(false)
 const updateInfo = ref<{
   hasUpdate: boolean
@@ -22,11 +22,9 @@ const updateInfo = ref<{
   downloadUrl: string
   releaseNotes: string
 } | null>(null)
-const keepAliveOutput = ref<string[]>([])
 const isKeepAliveRunning = ref(false)
-const keepAliveStatus = ref<{ type: string; message: string } | null>(null)
 
-const showMessage = (msg: string, type: 'success' | 'error' | 'warning' = 'success') => {
+const showMessage = (msg: string, type: 'success' | 'error' | 'warning' | 'info' = 'success') => {
   message.value = msg
   messageType.value = type
   if (messageTimer.value) {
@@ -184,26 +182,26 @@ const openReleasePage = async () => {
 const startKeepAlive = async () => {
   try {
     isKeepAliveRunning.value = true
-    showMessage('正在启动保活程序...', 'info')
+    showMessage('正在启动重置程序...', 'info')
     
     window.electron.ipcRenderer.on('keep-alive-output', (_, message) => {
       if (message.includes('注册成功')) {
-        showMessage('保活成功！', 'success')
+        showMessage('重置成功！', 'success')
       } else if (message.includes('开始')) {
-        showMessage('正在执行保活...', 'info')
+        showMessage('正在执行重置...', 'info')
       }
     })
     
     window.electron.ipcRenderer.on('keep-alive-error', (_, message) => {
-      showMessage('保活执行出错: ' + message, 'error')
+      showMessage('重置执行出错: ' + message, 'error')
     })
     
     const result = await window.electron.ipcRenderer.invoke('start-keep-alive')
     
     if (result.success) {
-      showMessage('保活程序执行成功', 'success')
+      showMessage('重置程序执行成功', 'success')
     } else {
-      showMessage(result.error || '保活程序执行失败', 'error')
+      showMessage(result.error || '重置程序执行失败', 'error')
     }
   } catch (error) {
     const err = error as Error
@@ -316,7 +314,8 @@ loadCurrentIds()
       <div class="message" :class="{ 
         'show': message, 
         'error': messageType === 'error',
-        'warning': messageType === 'warning'
+        'warning': messageType === 'warning',
+        'info': messageType === 'info'
       }">
         <svg class="message-icon" viewBox="0 0 24 24">
           <path v-if="messageType === 'success'" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4.59-12.42L10 14.17l-2.59-2.58L6 13l4 4 8-8z"/>
@@ -1031,6 +1030,17 @@ h2 {
 .function-grid,
 .function-item,
 .toggle-section {
+  display: none;
+}
+
+/* 添加 info 类型的消息样式 */
+.message.info {
+  background: var(--apple-blue);
+}
+
+/* 移除未使用的样式 */
+.keep-alive-log,
+.status-text {
   display: none;
 }
 </style>

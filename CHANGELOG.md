@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2024-01-10
+
+### Added
+- 新增一键重置功能
+- 优化界面布局和交互体验
+- 改进错误提示和状态反馈
+
+### Changed
+- 优化按钮布局和样式
+- 改进功能区域的组织方式
+- 简化操作流程
+
+### Fixed
+- 修复中文显示乱码问题
+- 修复插件加载相关问题
+- 修复一些已知的界面问题
+
 ## [1.0.1-beta3] - 2024-12-26
 
 ### Fixed

@@ -3,7 +3,7 @@ import { join, dirname } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { homedir } from 'os'
-import { existsSync, readFileSync, writeFileSync, chmodSync, statSync, copyFileSync, readdirSync, mkdirSync as mkdir } from 'fs'
+import { existsSync, readFileSync, writeFileSync, chmodSync, statSync, copyFileSync, mkdirSync as mkdir } from 'fs'
 import { platform } from 'os'
 import { StorageData, ModifyResult, CurrentIds } from './types'
 import { compare } from 'semver'
@@ -401,7 +401,7 @@ async function checkForUpdates(): Promise<{
 
 // 修改 copyExtensionFiles 函数
 function copyExtensionFiles() {
-  const srcExtDir = join(__dirname, '../../workspace/turnstilePatch')
+  // 直接使用目标目录，不需要源目录
   const destExtDir = join(app.getPath('userData'), 'turnstilePatch')
   
   try {

@@ -1,8 +1,9 @@
 # 🚀 Ez2 Use Cursor Free Tools
 
-> 
+> 一个能够帮你自动注册、刷新token、修改机器ID的工具
 
 ⚠️ This tool is only available to those who are unable to pay but urgently need to use it.
+
 
 <div align="center">
 
@@ -12,7 +13,6 @@
 
 [![Stars](https://img.shields.io/github/stars/GalacticDevOps/ez-cursor-free?style=flat-square&logo=github)](https://github.com/GalacticDevOps/ez-cursor-free/stargazers)
 [![Build Release](https://github.com/GalacticDevOps/ez-cursor-free/actions/workflows/release.yml/badge.svg)](https://github.com/GalacticDevOps/ez-cursor-free/actions/workflows/release.yml)
-
 [![Issues](https://img.shields.io/github/issues/GalacticDevOps/ez-cursor-free)](https://github.com/GalacticDevOps/ez-cursor-free/issues)
 
 [🌏 中文](#-chinese) | [🌟 English](#-english)
@@ -31,57 +31,159 @@
 
 # 🌏 Chinese
 
-一个帮助你管理 Cursor 机器ID 的简单工具。
+### 📝 问题描述
+
+> 当看到以下提示时重置Cursor试用期：
+
+```text
+Too many free trial accounts used on this machine.
+Please upgrade to pro. We have this limit in place
+to prevent abuse. Please let us know if you believe
+this is a mistake.
+```
+
+> 如果看到以下提示：
+```text
+You've reached your trial request limit.
+```
+> 这表示在VIP免费试用期间已达到使用次数限制。解决方案：
+> - 注销当前账号并重新注册
+> - 更换新的账号
+
+### 💻 系统支持
+
+<div align="center">
+<table>
+<tr>
+<td>
+
+**Windows** ✅
+- x64 (64-bit)
+- x86 (32-bit)
+
+</td>
+<td>
+
+**macOS** ✅
+- Intel (x64)
+- Apple Silicon (M1/M2)
+
+</td>
+<td>
+
+**Linux** ✅
+- x64 (64-bit)
+- x86 (32-bit)
+- ARM64
+
+</td>
+</tr>
+</table>
+</div>
 
 ## 功能特点
 
-- 🔄 一键生成新的机器 ID
+- 🔄 一键重置功能
+- 🎯 修改机器 ID
 - 🔒 支持设置配置文件只读模式
+- 💾 配置文件备份和还原
 - 🌓 支持浅色/深色主题
 - 💻 跨平台支持 (Windows, macOS, Linux)
-- 🎯 简单直观的界面
+- 🎨 简洁美观的界面
 
 ## 安装使用
 
 1. 从 [Releases](https://github.com/GalacticDevOps/ez-cursor-free/releases) 页面下载最新版本
 2. 安装并运行应用
-3. 点击"修改 ID"生成新的 ID
+3. 根据需要使用相应功能
 4. 重启 Cursor 以应用更改
+
+### 📦 手动安装
+
+> 从 [releases](https://github.com/GalacticDevOps/ez-cursor-free/releases/latest) 页面下载适合您系统的文件
 
 ## 注意事项
 
-- 修改 ID 前请确保已关闭 Cursor
+- 使用功能前请确保已关闭 Cursor
 - 建议修改后将配置文件设为只读模式
 - 如遇问题请查看错误提示或提交 Issue
 
 # 🌟 English
 
-A simple tool to help you manage Cursor machine IDs.
+### 📝 Description
+
+> Resets Cursor's free trial limitation when you see:
+
+```text
+Too many free trial accounts used on this machine.
+Please upgrade to pro. We have this limit in place
+to prevent abuse. Please let us know if you believe
+this is a mistake.
+```
+
+> If you see this message:
+```text
+You've reached your trial request limit.
+```
+> This means you've reached the usage limit during the VIP free trial period. Solutions:
+> - Log out and register a new account
+> - Switch to a different account
+
+### 💻 System Support
+
+<div align="center">
+<table>
+<tr>
+<td>
+
+**Windows** ✅
+- x64 (64-bit)
+- x86 (32-bit)
+
+</td>
+<td>
+
+**macOS** ✅
+- Intel (x64)
+- Apple Silicon (M1/M2)
+
+</td>
+<td>
+
+**Linux** ✅
+- x64 (64-bit)
+- x86 (32-bit)
+- ARM64
+
+</td>
+</tr>
+</table>
+</div>
 
 ## Features
 
-- 🔄 Generate new machine IDs with one click
+- 🔄 One-click reset function
+- 🎯 Modify machine IDs
 - 🔒 Set configuration file to read-only mode
+- 💾 Configuration backup and restore
 - 🌓 Support light/dark mode
 - 💻 Cross-platform support (Windows, macOS, Linux)
-- 🎯 Simple and intuitive interface
+- 🎨 Clean and beautiful interface
 
 ## Installation
 
 1. Download the latest release from the [Releases](https://github.com/GalacticDevOps/ez-cursor-free/releases) page
 2. Install and run the application
-3. Click "Modify ID" to generate new IDs
+3. Use the features as needed
 4. Restart Cursor to apply changes
 
 ### 📦 Manual Installation
 
 > Download the appropriate file for your system from [releases](https://github.com/GalacticDevOps/ez-cursor-free/releases/latest)
 
-## ⭐  Star History or Repobeats
+## ⭐ Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=GalacticDevOps/ez-cursor-free&type=Date)](https://star-history.com/#GalacticDevOps/ez-cursor-free&Date)
-
-![Alt](https://repobeats.axiom.co/api/embed/e093d035f86c7cc57f690c634df67bcf821455df.svg "Repobeats analytics image")
 
 ## Contributors
 
