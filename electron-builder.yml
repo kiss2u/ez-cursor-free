@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: com.ez2cursor.app
 productName: ez-cursor-free
 directories:
   buildResources: build
