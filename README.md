@@ -181,6 +181,10 @@ You've reached your trial request limit.
 
 > Download the appropriate file for your system from [releases](https://github.com/GalacticDevOps/ez-cursor-free/releases/latest)
 
+### 🎉 Thanks
+
+- [gpt-cursor-auto](https://github.com/hmhm2022/gpt-cursor-auto)
+
 ## ⭐ Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=GalacticDevOps/ez-cursor-free&type=Date)](https://star-history.com/#GalacticDevOps/ez-cursor-free&Date)
