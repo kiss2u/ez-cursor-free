@@ -183,9 +183,7 @@ You've reached your trial request limit.
 
 ### 🎉 Thanks
 
-- [gpt-cursor-auto](https://github.com/hmhm2022/gpt-cursor-auto)
-
-This project is developed based on the gpt-cursor-auto project, thank you for the contribution of the original author [@hmhm2022](https://github.com/hmhm2022).
+This project is developed based on the [gpt-cursor-auto](https://github.com/hmhm2022/gpt-cursor-auto) project, thank you for the contribution of the original author [@hmhm2022](https://github.com/hmhm2022).
 
 ## ⭐ Star History
 
