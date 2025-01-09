@@ -2,7 +2,7 @@
 
 > 
 
-> ⚠️ This tool is only available to those who are unable to pay but urgently need to use it.
+⚠️ This tool is only available to those who are unable to pay but urgently need to use it.
 
 <div align="center">
 
