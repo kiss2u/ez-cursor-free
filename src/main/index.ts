@@ -3,10 +3,11 @@ import { join, dirname } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { homedir } from 'os'
-import { existsSync, readFileSync, writeFileSync, chmodSync, statSync, copyFileSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync, chmodSync, statSync, copyFileSync, readdirSync, mkdirSync as mkdir } from 'fs'
 import { platform } from 'os'
 import { StorageData, ModifyResult, CurrentIds } from './types'
 import { compare } from 'semver'
+import { spawn } from 'child_process'
 
 function getStoragePath(): string {
   const home = homedir()
@@ -227,6 +228,85 @@ app.whenReady().then(() => {
     return { success: true }
   })
 
+  // 添加保活处理器
+  ipcMain.handle('start-keep-alive', async () => {
+    return new Promise((resolve, reject) => {
+      try {
+        const extDir = copyExtensionFiles()
+        if (!extDir) {
+          reject({ success: false, error: '插件目录准备失败，请检查文件权限' })
+          return
+        }
+
+        const pythonScriptPath = join(__dirname, '../../workspace/cursor_pro_keep_alive.py')
+        if (!existsSync(pythonScriptPath)) {
+          reject({ success: false, error: 'Python脚本不存在' })
+          return
+        }
+
+        const pythonProcess = spawn('python', [
+          '-u',  // 无缓冲输出
+          pythonScriptPath,
+          '--extension-path', extDir
+        ], {
+          env: {
+            ...process.env,
+            PYTHONIOENCODING: 'utf-8',
+            LANG: 'zh_CN.UTF-8',
+            PYTHONUNBUFFERED: '1'  // 确保Python输出无缓冲
+          }
+        })
+        
+        pythonProcess.stdout.setEncoding('utf-8')
+        pythonProcess.stderr.setEncoding('utf-8')
+        
+        let output = ''
+        let error = ''
+        
+        pythonProcess.stdout.on('data', (data) => {
+          const message = data.toString()
+          output += message
+          BrowserWindow.getAllWindows().forEach(window => {
+            window.webContents.send('keep-alive-output', message)
+          })
+        })
+
+        pythonProcess.stderr.on('data', (data) => {
+          const message = data.toString()
+          error += message
+          BrowserWindow.getAllWindows().forEach(window => {
+            window.webContents.send('keep-alive-error', message)
+          })
+        })
+
+        pythonProcess.on('close', (code) => {
+          if (code === 0) {
+            resolve({ success: true, output })
+          } else {
+            reject({ 
+              success: false, 
+              error: error || `Python进程退出，代码: ${code}`, 
+              output 
+            })
+          }
+        })
+
+        pythonProcess.on('error', (err) => {
+          reject({ 
+            success: false, 
+            error: `启动Python进程失败: ${err.message}`, 
+            output 
+          })
+        })
+      } catch (error) {
+        reject({ 
+          success: false, 
+          error: `执行出错: ${error instanceof Error ? error.message : String(error)}` 
+        })
+      }
+    })
+  })
+
   createWindow()
 
   app.on('activate', function () {
@@ -315,6 +395,116 @@ async function checkForUpdates(): Promise<{
     })
   } catch (error) {
     console.error('检查更新失败:', error)
+    return null
+  }
+}
+
+// 修改 copyExtensionFiles 函数
+function copyExtensionFiles() {
+  const srcExtDir = join(__dirname, '../../workspace/turnstilePatch')
+  const destExtDir = join(app.getPath('userData'), 'turnstilePatch')
+  
+  try {
+    // 创建插件文件内容
+    const manifest = {
+      name: "Turnstile Patch",
+      version: "1.0",
+      manifest_version: 2,
+      description: "Patch for Turnstile verification",
+      permissions: [
+        "<all_urls>",
+        "webRequest",
+        "webRequestBlocking"
+      ],
+      content_scripts: [{
+        matches: ["<all_urls>"],
+        js: ["content.js"],
+        run_at: "document_start"
+      }]
+    }
+    
+    const contentScript = `
+// Turnstile patch content script
+(function() {
+  const script = document.createElement('script');
+  script.textContent = \`
+    if (window.turnstile) {
+      const originalRender = window.turnstile.render;
+      window.turnstile.render = function(container, options) {
+        options = options || {};
+        const originalCallback = options.callback;
+        options.callback = function(token) {
+          console.log('Turnstile token:', token);
+          if (typeof originalCallback === 'function') {
+            originalCallback(token);
+          }
+        };
+        return originalRender(container, options);
+      };
+    }
+
+    // 监听动态加载的 turnstile
+    Object.defineProperty(window, 'turnstile', {
+      set: function(value) {
+        if (value && value.render) {
+          const originalRender = value.render;
+          value.render = function(container, options) {
+            options = options || {};
+            const originalCallback = options.callback;
+            options.callback = function(token) {
+              console.log('Turnstile token:', token);
+              if (typeof originalCallback === 'function') {
+                originalCallback(token);
+              }
+            };
+            return originalRender(container, options);
+          };
+        }
+        delete window.turnstile;
+        window.turnstile = value;
+      },
+      get: function() {
+        return window._turnstile;
+      },
+      configurable: true
+    });
+  \`;
+  document.documentElement.appendChild(script);
+  script.remove();
+})();
+    `.trim()
+
+    // 确保目标目录存在
+    if (!existsSync(destExtDir)) {
+      try {
+        mkdir(destExtDir)
+      } catch (error) {
+        console.error('创建目标目录失败:', error)
+        return null
+      }
+    }
+
+    try {
+      // 直接写入文件到目标目录
+      const manifestPath = join(destExtDir, 'manifest.json')
+      const contentPath = join(destExtDir, 'content.js')
+
+      writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
+      writeFileSync(contentPath, contentScript)
+
+      // 验证文件是否创建成功
+      if (!existsSync(manifestPath) || !existsSync(contentPath)) {
+        console.error('文件创建验证失败')
+        return null
+      }
+
+      return destExtDir
+    } catch (error) {
+      console.error('创建插件文件失败:', error)
+      return null
+    }
+  } catch (error) {
+    console.error('插件目录准备失败:', error)
     return null
   }
 }

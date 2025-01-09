@@ -1,216 +1,94 @@
-from DrissionPage import ChromiumOptions, Chromium
-from DrissionPage.common import Keys
-import re
+import os
+import sys
+import argparse
+
+from exit_cursor import ExitCursor
+
+os.environ["PYTHONVERBOSE"] = "0"
+os.environ["PYINSTALLER_VERBOSE"] = "0"
+
 import time
 import random
 from cursor_auth_manager import CursorAuthManager
+import os
+from logger import logging
+from browser_utils import BrowserManager
+from get_email_code import EmailVerificationHandler
 
-
-def get_veri_code(tab):
-    """获取验证码"""
-    username = account.split('@')[0]
-    try:
-        while True: 
-            if tab.ele('@id=pre_button'):
-                tab.actions.click('@id=pre_button').type(Keys.CTRL_A).key_down(Keys.BACKSPACE).key_up(Keys.BACKSPACE).input(username).key_down(Keys.ENTER).key_up(Keys.ENTER)
-                break
-            time.sleep(1)
-
-        while True:
-            new_mail = tab.ele('@class=mail')
-            if new_mail:
-                if new_mail.text:
-                    print('最新的邮件：', new_mail.text)
-                    tab.actions.click('@class=mail')
-                    break
-                else:
-                    print(new_mail)
-                    break
-            time.sleep(1)
-
-        if tab.ele('@class=overflow-auto mb-20'):
-            email_content = tab.ele('@class=overflow-auto mb-20').text
-            verification_code = re.search(r'verification code is (\d{6})', email_content)
-            if verification_code:
-                code = verification_code.group(1)
-                print('验证码：', code)
-            else:
-                print('未找到验证码')
-       
-        if tab.ele('@id=delete_mail'):
-            tab.actions.click('@id=delete_mail')
-            time.sleep(1)
-
-        if tab.ele('@id=confirm_mail'):
-            tab.actions.click('@id=confirm_mail')
-            print("删除邮件")
-        tab.close()
-    except Exception as e:
-        print(e)
-
-    return code
+# 设置默认编码
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
+if sys.stderr.encoding != 'utf-8':
+    sys.stderr.reconfigure(encoding='utf-8')
 
 def handle_turnstile(tab):
-    """处理 Turnstile 验证"""
-    print("准备处理验证")
-    try:  
+    try:
         while True:
             try:
-                challengeCheck = (tab.ele('@id=cf-turnstile', timeout=2)
-                                    .child()
-                                    .shadow_root
-                                    .ele("tag:iframe")
-                                    .ele("tag:body")
-                                    .sr("tag:input"))
-                                    
+                challengeCheck = (
+                    tab.ele("@id=cf-turnstile", timeout=2)
+                    .child()
+                    .shadow_root.ele("tag:iframe")
+                    .ele("tag:body")
+                    .sr("tag:input")
+                )
+
                 if challengeCheck:
-                    print("验证框加载完成")
                     time.sleep(random.uniform(1, 3))
                     challengeCheck.click()
-                    print("验证按钮已点击，等待验证完成...")
                     time.sleep(2)
                     return True
             except:
                 pass
 
-            if tab.ele('@name=password'):
-                print("无需验证")   
-                break            
-            if tab.ele('@data-index=0'):
-                print("无需验证")   
+            if tab.ele("@name=password"):
                 break
-            if tab.ele('Account Settings'):
-                print("无需验证")   
-                break       
+            if tab.ele("@data-index=0"):
+                break
+            if tab.ele("Account Settings"):
+                break
 
-            time.sleep(random.uniform(1,2))       
+            time.sleep(random.uniform(1, 2))
     except Exception as e:
         print(e)
-        print('跳过验证')
         return False
 
-def delete_account(browser, tab):
-    """删除账户流程"""
-    print("\n开始删除账户...")
-    
-    try:
-        if tab.ele('@name=email'):
-            tab.ele('@name=email').input(account)
-            print("输入账号")
-            time.sleep(random.uniform(1,3))
-    except Exception as e:
-        print(f"输入账号失败: {str(e)}")
 
-    try:
-        if tab.ele('Continue'):
-            tab.ele('Continue').click()
-            print("点击Continue")
-    except Exception as e:
-        print(f"点击Continue失败: {str(e)}")
+def get_cursor_session_token(tab, max_attempts=3, retry_interval=2):
+    """
+    获取Cursor会话token，带有重试机制
+    :param tab: 浏览器标签页
+    :param max_attempts: 最大尝试次数
+    :param retry_interval: 重试间隔(秒)
+    :return: session token 或 None
+    """
+    print("开始获取cookie")
+    attempts = 0
 
-    handle_turnstile(tab)
-    time.sleep(5)
-
-    try:
-        if tab.ele('@name=password'):
-            tab.ele('@name=password').input(password)
-            print("输入密码")
-            time.sleep(random.uniform(1,3))
-    except Exception as e:
-        print("输入密码失败")
-
-    sign_in_button = tab.ele('xpath:/html/body/div[1]/div/div/div[2]/div/form/div/button')
-    try:
-        if sign_in_button:
-            sign_in_button.click(by_js=True)
-            print("点击Sign in")
-    except Exception as e:
-        print(f"点击Sign in失败: {str(e)}")
-
-    handle_turnstile(tab)
-
-    # 处理验证码
-    while True:
+    while attempts < max_attempts:
         try:
-            if tab.ele('Account Settings'):
-                break
-            if tab.ele('@data-index=0'):
-                tab_mail = browser.new_tab(mail_url)
-                browser.activate_tab(tab_mail)
-                print("打开邮箱页面")
-                code = get_veri_code(tab_mail)
+            cookies = tab.cookies()
+            for cookie in cookies:
+                if cookie.get("name") == "WorkosCursorSessionToken":
+                    return cookie["value"].split("%3A%3A")[1]
 
-                if code:
-                    print("获取验证码成功：", code)
-                    browser.activate_tab(tab)
-                else:
-                    print("获取验证码失败，程序退出")
-                    return False   
+            attempts += 1
+            if attempts < max_attempts:
+                print(
+                    f"第 {attempts} 次尝试未获取到CursorSessionToken，{retry_interval}秒后重试..."
+                )
+                time.sleep(retry_interval)
+            else:
+                print(f"已达到最大尝试次数({max_attempts})，获取CursorSessionToken失败")
 
-                i = 0
-                for digit in code:
-                    tab.ele(f'@data-index={i}').input(digit)
-                    time.sleep(random.uniform(0.1,0.3))
-                    i += 1
-                break   
         except Exception as e:
-            print(e)
+            print(f"获取cookie失败: {str(e)}")
+            attempts += 1
+            if attempts < max_attempts:
+                print(f"将在 {retry_interval} 秒后重试...")
+                time.sleep(retry_interval)
 
-    handle_turnstile(tab)
-    time.sleep(random.uniform(1,3))
-    # tab.get_screenshot('sign-in_success.png')
-    # print("登录账户截图")
-    
-    tab.get(settings_url)
-    print("进入设置页面")
-
-    try:
-        if tab.ele('@class=mt-1'):
-            tab.ele('@class=mt-1').click()
-            print("点击Adavance")
-            time.sleep(random.uniform(1,2))
-    except Exception as e:
-        print(f"点击Adavance失败: {str(e)}")
-
-    try:
-        if tab.ele('Delete Account'):
-            tab.ele('Delete Account').click()
-            print("点击Delete Account")
-            time.sleep(random.uniform(1,2))
-    except Exception as e:
-        print(f"点击Delete Account失败: {str(e)}")
-
-    try:
-        if tab.ele('tag:input'):
-            tab.actions.click('tag:input').type('delete')
-            print("输入delete")
-            time.sleep(random.uniform(1,2))
-    except Exception as e:
-        print(f"输入delete失败: {str(e)}")
-
-    delete_button = tab.ele('xpath:/html/body/main/div/div/div/div/div/div[1]/div[2]/div[3]/div[2]/div/div/div[2]/button[2]')
-    try:
-        if delete_button:
-            print("点击Delete")
-            delete_button.click()
-            time.sleep(5)
-            # tab.get_screenshot('delete_account.png')
-            # print("删除账户截图")
-            return True
-    except Exception as e:  
-        print(f"点击Delete失败: {str(e)}")
-        return False
-
-
-def get_cursor_session_token(tab):
-    """获取cursor session token"""
-    cookies = tab.cookies()
-    cursor_session_token = None
-    for cookie in cookies:
-        if cookie['name'] == 'WorkosCursorSessionToken':
-            cursor_session_token = cookie['value'].split('%3A%3A')[1]
-            break
-    return cursor_session_token
+    return None
 
 
 def update_cursor_auth(email=None, access_token=None, refresh_token=None):
@@ -220,148 +98,212 @@ def update_cursor_auth(email=None, access_token=None, refresh_token=None):
     auth_manager = CursorAuthManager()
     return auth_manager.update_auth(email, access_token, refresh_token)
 
-def sign_up_account(browser, tab):
-    """注册账户流程"""
-    print("\n开始注册新账户...")
+
+def get_temp_email(tab):
+    """获取临时邮箱地址"""
+    max_retries = 5
+    email_js = None
+    
+    email_input = tab.ele("@id=mail")
+    if email_input:
+        email = email_input.attr('value')
+        print(f"当前邮箱: {email}")
+    
+    copy_button = tab.ele("@class=click-to-copy")
+    if copy_button:
+        copy_button.click()
+        print("邮箱地址已复制到剪贴板")
+
+    for i in range(max_retries):
+        email_js = tab.run_js('return document.getElementById("mail").value')
+        if email_js:
+            print(f"获取到邮箱地址: {email_js}")
+            break
+        print(f"等待邮箱加载... ({i+1}/{max_retries})")
+        time.sleep(2)
+
+    if not email_js:
+        raise ValueError("无法获取临时邮箱地址")
+    return email_js
+
+
+def sign_up_account(browser, tab, account_info):
+    """注册账号"""
+    print("开始注册...")
     tab.get(sign_up_url)
 
     try:
-        if tab.ele('@name=first_name'):
-            print("已打开注册页面")
-            tab.actions.click('@name=first_name').input(first_name)
-            time.sleep(random.uniform(1,3))
+        if tab.ele("@name=first_name"):
+            tab.actions.click("@name=first_name").input(account_info["first_name"])
+            time.sleep(random.uniform(1, 3))
 
-            tab.actions.click('@name=last_name').input(last_name)
-            time.sleep(random.uniform(1,3))
+            tab.actions.click("@name=last_name").input(account_info["last_name"])
+            time.sleep(random.uniform(1, 3))
 
-            tab.actions.click('@name=email').input(account)
-            print("输入邮箱" )
-            time.sleep(random.uniform(1,3))
+            tab.actions.click("@name=email").input(account_info["email"])
+            time.sleep(random.uniform(1, 3))
 
-            tab.actions.click('@type=submit')
-            print("点击注册按钮")
+            tab.actions.click("@type=submit")
 
     except Exception as e:
         print("打开注册页面失败")
         return False
 
-    handle_turnstile(tab)            
+    handle_turnstile(tab)
 
     try:
-        if tab.ele('@name=password'):
-            tab.ele('@name=password').input(password)
-            print("输入密码")
-            time.sleep(random.uniform(1,3))
+        if tab.ele("@name=password"):
+            tab.ele("@name=password").input(account_info["password"])
+            time.sleep(random.uniform(1, 3))
 
-            tab.ele('@type=submit').click()
-            print("点击Continue按钮")
+            tab.ele("@type=submit").click()
+            print("请稍等...")
 
     except Exception as e:
-        print("输入密码失败")
+        print("执行失败")
         return False
 
-    time.sleep(random.uniform(1,3))
-    if tab.ele('This email is not available.'):
-        print('This email is not available.')
+    time.sleep(random.uniform(1, 3))
+    if tab.ele("This email is not available."):
+        print("执行失败")
         return False
 
     handle_turnstile(tab)
 
     while True:
         try:
-            if tab.ele('Account Settings'):
+            if tab.ele("Account Settings"):
                 break
-            if tab.ele('@data-index=0'):
-                tab_mail = browser.new_tab(mail_url)
-                browser.activate_tab(tab_mail)
-                print("打开邮箱页面")
-                code = get_veri_code(tab_mail)
-
-                if code:
-                    print("获取验证码成功：", code)
-                    browser.activate_tab(tab)
-                else:
-                    print("获取验证码失败，程序退出")
+            if tab.ele("@data-index=0"):
+                code = email_handler.get_verification_code(account_info["email"])
+                if not code:
                     return False
 
                 i = 0
                 for digit in code:
-                    tab.ele(f'@data-index={i}').input(digit)
-                    time.sleep(random.uniform(0.1,0.3))
+                    tab.ele(f"@data-index={i}").input(digit)
+                    time.sleep(random.uniform(0.1, 0.3))
                     i += 1
                 break
         except Exception as e:
             print(e)
 
     handle_turnstile(tab)
-    
-    time.sleep(random.uniform(1,3))
-    print("进入设置页面")
-    tab.get(settings_url)
-    try:
-        usage_ele = tab.ele('xpath:/html/body/main/div/div/div/div/div/div[2]/div/div/div/div[1]/div[1]/span[2]')
-        if usage_ele:
-            usage_info = usage_ele.text
-            total_usage = usage_info.split('/')[-1].strip()
-            print("可用上限: " + total_usage)
-    except Exception as e:
-        print("获取可用上限失败")
-    # tab.get_screenshot("sign_up_success.png")
-    # print("注册账户截图")
-    print("注册完成")
-    print("Cursor 账号： " + account)
-    print("       密码： " + password)
     return True
 
-if __name__ == "__main__":
-    # 配置信息
-    login_url = 'https://authenticator.cursor.sh'
-    sign_up_url = 'https://authenticator.cursor.sh/sign-up'
-    settings_url = 'https://www.cursor.com/settings'
-    mail_url = 'https://tempmail.plus'
- 
-    account = 'your_account'                  #必须是 username@mailto.plus 邮箱
-    password = 'your_password'
-    first_name = 'your_firstname'
-    last_name = 'your_lastname'
 
-    auto_update_cursor_auth = True
+class EmailGenerator:
+    def __init__(
+        self,
+        password="".join(
+            random.choices(
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*",
+                k=12,
+            )
+        ),
+        first_name=''.join(random.choices("abcdefghijklmnopqrstuvwxyz", k=6)),
+        last_name=''.join(random.choices("abcdefghijklmnopqrstuvwxyz", k=6)),
+    ):
+        self.default_password = password
+        self.default_first_name = first_name
+        self.default_last_name = last_name
+        self.email = None  # 添加 email 属性
+
+    def set_email(self, email):
+        """设置邮箱地址"""
+        self.email = email
+
+    def get_account_info(self):
+        """获取完整的账号信息"""
+        if not self.email:
+            raise ValueError("邮箱地址未设置")
+        return {
+            "email": self.email,
+            "password": self.default_password,
+            "first_name": self.default_first_name,
+            "last_name": self.default_last_name,
+        }
 
 
-    # 浏览器配置
-    co = ChromiumOptions()
-    co.add_extension("turnstilePatch")
-    co.headless()                            #无头模式
-    co.set_user_agent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.92 Safari/537.36')
-    co.set_pref('credentials_enable_service', False)
-    co.set_argument('--hide-crash-restore-bubble') 
-    co.auto_port()
-    # co.set_argument('--no-sandbox')        # 无沙盒模式     用于linux
-    # co.set_argument('--headless=new')      #无界面系统启动参数   用于linux
-    # co.set_proxy('127.0.0.1:10809')        #设置代理
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--extension-path', help='插件目录路径')
+    args = parser.parse_args()
 
-    browser = Chromium(co)
-    tab = browser.latest_tab
-    tab.run_js("try { turnstile.reset() } catch(e) { }")
-    
-    print("开始执行删除和注册流程")
-    print("***请确认已经用https://tempmail.plus/zh邮箱成功申请过cursor账号！***")
-    tab.get(login_url)
-    
-    # 执行删除和注册流程
-    if delete_account(browser, tab):
-        print("账户删除成功")
-        time.sleep(3)
-        if sign_up_account(browser, tab):
-            token = get_cursor_session_token(tab)
-            print(f"CursorSessionToken: {token}")
-            print("账户注册成功")
-            if auto_update_cursor_auth:
-                update_cursor_auth(email=account, access_token=token, refresh_token=token)
+    browser_manager = None
+    try:
+        ExitCursor()
+        extension_path = args.extension_path
+        if extension_path:
+            print(f"使用指定的插件路径: {extension_path}")
+            if not os.path.exists(extension_path):
+                print(f"警告: 指定的插件路径不存在: {extension_path}")
+            else:
+                required_files = ['manifest.json', 'content.js']
+                missing_files = [f for f in required_files 
+                               if not os.path.exists(os.path.join(extension_path, f))]
+                if missing_files:
+                    print(f"警告: 插件目录缺少文件: {', '.join(missing_files)}")
+                else:
+                    print("插件文件检查通过")
+        
+        browser_manager = BrowserManager(extension_path=extension_path)
+        browser = browser_manager.init_browser()
+
+        # 固定的 URL 配置
+        login_url = "https://authenticator.cursor.sh"
+        sign_up_url = "https://authenticator.cursor.sh/sign-up"
+        settings_url = "https://www.cursor.com/settings"
+        mail_url = "https://temp-mail.org/zh"
+
+        # 打开临时邮箱标签页
+        mail_tab = browser.new_tab(mail_url)
+        browser.activate_tab(mail_tab)
+        time.sleep(2)
+
+        # 获取临时邮箱地址
+        email_js = get_temp_email(mail_tab)
+
+        # 初始化邮箱验证处理器
+        email_handler = EmailVerificationHandler(browser, mail_url)
+
+        # 生成账号信息
+        email_generator = EmailGenerator()
+        email_generator.set_email(email_js)
+        account_info = email_generator.get_account_info()
+
+        # 打开注册标签页
+        signup_tab = browser.new_tab(sign_up_url)
+        browser.activate_tab(signup_tab)
+        time.sleep(2)
+
+        # 重置 turnstile
+        signup_tab.run_js("try { turnstile.reset() } catch(e) { }")
+
+        # 开始注册流程
+        if sign_up_account(browser, signup_tab, account_info):
+            token = get_cursor_session_token(signup_tab)
+            if token:
+                print(f"注册成功! Token: {token}")
+                update_cursor_auth(
+                    email=account_info["email"], access_token=token, refresh_token=token
+                )
+            else:
+                print("获取token失败")
         else:
-            print("账户注册失败")
-    else:
-        print("账户删除失败")
+            print("注册失败")
 
-    print("脚本执行完毕")
-    browser.quit()    
+        print("执行完毕")
+
+    except Exception as e:
+        logging.error(f"程序执行出错: {str(e)}")
+        import traceback
+        logging.error(traceback.format_exc())
+    finally:
+        if browser_manager:
+            browser_manager.quit()
+        input("\n按回车键退出...")
+
+
+if __name__ == "__main__":
+    main()

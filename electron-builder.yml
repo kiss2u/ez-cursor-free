@@ -4,6 +4,7 @@ copyright: Copyright © Soleil 2025
 directories:
   buildResources: build
 files:
+  - "workspace/**"
   - "out/**"
   - '!**/.vscode/*'
   - '!src/*'
@@ -14,6 +15,7 @@ files:
 asar: true
 asarUnpack:
   - resources/**
+  - workspace/**
 win:
   executableName: ez-cursor-free
   icon: build/icons/512x512.png

@@ -16,6 +16,13 @@ interface IpcRenderer {
     releaseNotes: string
   } | null>
   invoke(channel: 'open-release-page', url: string): Promise<{ success: boolean }>
+  invoke(channel: 'start-keep-alive'): Promise<{
+    success: boolean
+    output?: string
+    error?: string
+  }>
+  on(channel: 'keep-alive-output', callback: (event: any, message: string) => void): void
+  on(channel: 'keep-alive-error', callback: (event: any, message: string) => void): void
 }
 
 declare global {

@@ -22,6 +22,9 @@ const updateInfo = ref<{
   downloadUrl: string
   releaseNotes: string
 } | null>(null)
+const keepAliveOutput = ref<string[]>([])
+const isKeepAliveRunning = ref(false)
+const keepAliveStatus = ref<{ type: string; message: string } | null>(null)
 
 const showMessage = (msg: string, type: 'success' | 'error' | 'warning' = 'success') => {
   message.value = msg
@@ -178,6 +181,38 @@ const openReleasePage = async () => {
   }
 }
 
+const startKeepAlive = async () => {
+  try {
+    isKeepAliveRunning.value = true
+    showMessage('正在启动保活程序...', 'info')
+    
+    window.electron.ipcRenderer.on('keep-alive-output', (_, message) => {
+      if (message.includes('注册成功')) {
+        showMessage('保活成功！', 'success')
+      } else if (message.includes('开始')) {
+        showMessage('正在执行保活...', 'info')
+      }
+    })
+    
+    window.electron.ipcRenderer.on('keep-alive-error', (_, message) => {
+      showMessage('保活执行出错: ' + message, 'error')
+    })
+    
+    const result = await window.electron.ipcRenderer.invoke('start-keep-alive')
+    
+    if (result.success) {
+      showMessage('保活程序执行成功', 'success')
+    } else {
+      showMessage(result.error || '保活程序执行失败', 'error')
+    }
+  } catch (error) {
+    const err = error as Error
+    showMessage(err.message || '执行出错', 'error')
+  } finally {
+    isKeepAliveRunning.value = false
+  }
+}
+
 // 初始化时检查备份状态
 onMounted(async () => {
   await checkBackupExists()
@@ -223,43 +258,57 @@ loadCurrentIds()
         </div>
       </div>
 
-      <div class="actions">
-        <button 
-          class="primary-btn" 
-          :class="{ 
-            'loading': isLoading,
-            'disabled': setReadOnly
-          }" 
-          @click="modifyIds"
-          :disabled="isLoading || setReadOnly"
-        >
-          {{ isLoading ? '修改中...' : '修改 ID' }}
-        </button>
-        
-        <div class="backup-actions">
-          <button 
-            class="secondary-btn"
-            @click="backupStorage"
-            :disabled="isLoading || !currentIds.configPath"
-          >
-            备份配置
-          </button>
-          <button 
-            class="secondary-btn"
-            @click="restoreStorage"
-            :disabled="isLoading || setReadOnly || !backupExists"
-          >
-            还原配置
-          </button>
+      <div class="section function-section">
+        <h2>功能区</h2>
+        <div class="function-controls">
+          <div class="main-controls">
+            <button 
+              class="primary-btn"
+              :class="{ 'loading': isKeepAliveRunning }"
+              :disabled="isKeepAliveRunning"
+              @click="startKeepAlive"
+            >
+              {{ isKeepAliveRunning ? '重置中...' : '一键重置' }}
+            </button>
+
+            <button 
+              class="primary-btn"
+              :class="{ 
+                'loading': isLoading,
+                'disabled': setReadOnly
+              }" 
+              @click="modifyIds"
+              :disabled="isLoading || setReadOnly"
+            >
+              {{ isLoading ? '修改中...' : '修改 ID' }}
+            </button>
+          </div>
+
+          <div class="backup-controls">
+            <button 
+              class="secondary-btn"
+              @click="backupStorage"
+              :disabled="isLoading || !currentIds.configPath"
+            >
+              备份
+            </button>
+            <button 
+              class="secondary-btn"
+              @click="restoreStorage"
+              :disabled="isLoading || setReadOnly || !backupExists"
+            >
+              还原
+            </button>
+          </div>
+
+          <label class="toggle-option">
+            <input 
+              type="checkbox" 
+              v-model="setReadOnly"
+            >
+            <span class="toggle-label">只读</span>
+          </label>
         </div>
-        
-        <label class="toggle-option">
-          <input 
-            type="checkbox" 
-            v-model="setReadOnly"
-          >
-          <span class="toggle-label">设置为只读模式</span>
-        </label>
       </div>
     </div>
 
@@ -431,9 +480,9 @@ h2 {
 .actions {
   display: flex;
   align-items: center;
-  gap: 24px;
-  margin-top: 12px;
-  flex-shrink: 0;
+  gap: 16px;
+  margin-top: 20px;
+  flex-wrap: wrap;
 }
 
 .primary-btn {
@@ -525,9 +574,9 @@ h2 {
   transform: translateY(-20px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 380px;
-  max-width: calc(100vw - 32px);
-  justify-content: center;
+  min-width: 240px;
+  max-width: 480px;
+  text-align: center;
   position: relative;
   pointer-events: auto;
 }
@@ -617,7 +666,7 @@ h2 {
   .actions {
     flex-direction: column;
     align-items: stretch;
-    margin-top: 8px;
+    gap: 12px;
   }
   
   .primary-btn {
@@ -745,5 +794,243 @@ h2 {
   width: 14px;
   height: 14px;
   fill: currentColor;
+}
+
+.keep-alive-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.keep-alive-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-text {
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: var(--background);
+}
+
+.status-text.info {
+  color: var(--apple-blue);
+  background: rgba(0, 113, 227, 0.1);
+}
+
+.status-text.success {
+  color: #52c41a;
+  background: rgba(82, 196, 26, 0.1);
+}
+
+.status-text.error {
+  color: #ff4d4f;
+  background: rgba(255, 77, 79, 0.1);
+}
+
+/* 保活按钮样式 */
+.keep-alive-btn {
+  background: var(--apple-blue);
+  order: -1; /* 确保保活按钮在最前面 */
+}
+
+.keep-alive-btn.loading {
+  position: relative;
+  color: transparent;
+}
+
+.keep-alive-btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin: -8px 0 0 -8px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s infinite linear;
+}
+
+/* 消息提示样式优化 */
+.message {
+  min-width: 240px;
+  max-width: 480px;
+  text-align: center;
+}
+
+.message.info {
+  background: var(--apple-blue);
+}
+
+@media (max-width: 768px) {
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .keep-alive-btn {
+    order: 0;
+  }
+}
+
+/* 功能区样式 */
+.function-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.function-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.function-item {
+  display: flex;
+  gap: 8px;
+}
+
+.function-item button {
+  flex: 1;
+}
+
+.backup-group {
+  display: flex;
+  gap: 8px;
+}
+
+.toggle-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* 按钮样式优化 */
+.primary-btn, .secondary-btn {
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.keep-alive-btn {
+  background: var(--apple-blue);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .function-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .backup-group {
+    flex-direction: row;
+  }
+
+  .backup-group button {
+    flex: 1;
+  }
+}
+
+/* 功能区样式优化 */
+.function-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.function-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 主要按钮组样式 */
+.main-controls {
+  display: flex;
+  gap: 8px;
+}
+
+/* 按钮样式优化 */
+.primary-btn {
+  padding: 6px 12px;
+  min-width: 80px;
+  height: 32px;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+.secondary-btn {
+  padding: 6px 12px;
+  height: 32px;
+  font-size: 13px;
+  min-width: 60px;
+}
+
+/* 备份按钮组样式 */
+.backup-controls {
+  display: flex;
+  gap: 8px;
+}
+
+/* 只读模式开关样式 */
+.toggle-option {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 8px;
+  background: var(--background);
+  border-radius: 6px;
+  min-width: 60px;
+  justify-content: center;
+}
+
+.toggle-label {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .function-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .main-controls {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .backup-controls {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .toggle-option {
+    margin-left: 0;
+    flex: 0 0 auto;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    flex: 1;
+  }
+}
+
+/* 移除不需要的样式 */
+.function-grid,
+.function-item,
+.toggle-section {
+  display: none;
 }
 </style>
