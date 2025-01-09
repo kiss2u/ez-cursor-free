@@ -185,6 +185,8 @@ You've reached your trial request limit.
 
 - [gpt-cursor-auto](https://github.com/hmhm2022/gpt-cursor-auto)
 
+This project is developed based on the gpt-cursor-auto project, thank you for the contribution of the original author @hmhm2022.
+
 ## ⭐ Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=GalacticDevOps/ez-cursor-free&type=Date)](https://star-history.com/#GalacticDevOps/ez-cursor-free&Date)
