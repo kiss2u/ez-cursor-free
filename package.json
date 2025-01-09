@@ -1,10 +1,10 @@
 {
   "name": "ez-cursor-free",
   "version": "1.0.1-beta3",
-  "description": "An Electron application with Vue and TypeScript",
+  "description": "Ez2 Use Cursor Free Tools",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "Soleil",
+  "homepage": "https://galacticdevops.github.io",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.vue --fix",
@@ -20,7 +20,8 @@
     "build:mac": "npm run build && electron-builder --mac --universal",
     "build:linux": "npm run build && electron-builder --linux",
     "build:mac-intel": "npm run build && electron-builder --mac --x64",
-    "build:mac-arm": "npm run build && electron-builder --mac --arm64"
+    "build:mac-arm": "npm run build && electron-builder --mac --arm64",
+    "electron:generate-icons": "electron-icon-builder --input=./resources/icon.png --output=build --flatten"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
