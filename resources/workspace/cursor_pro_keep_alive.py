@@ -369,7 +369,6 @@ def main():
     finally:
         if browser_manager:
             browser_manager.quit()
-        input("\n按回车键退出...")
 
 
 if __name__ == "__main__":
