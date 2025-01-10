@@ -244,31 +244,13 @@ const startKeepAlive = async () => {
 
     showMessage('正在启动重置程序...', 'info')
     
-    // 清除之前的监听器
-    window.electron.ipcRenderer.removeListeners('python-output')
-    window.electron.ipcRenderer.removeListeners('python-error')
-    
-    // 添加新的监听器
-    window.electron.ipcRenderer.on('python-output', (_, message) => {
-      if (message.includes('注册成功')) {
-        showMessage('重置成功！', 'success')
-      } else if (message.includes('开始')) {
-        showMessage('正在执行重置...', 'info')
-      }
-      console.log('Python 输出:', message)
-    })
-    
-    window.electron.ipcRenderer.on('python-error', (_, message) => {
-      showMessage('重置执行出错: ' + message, 'error')
-      console.error('Python 错误:', message)
-    })
-    
-    const result = await window.electron.ipcRenderer.invoke('start-keep-alive')
+    // 调用新的命令行执行函数
+    const result = await window.electron.ipcRenderer.invoke('run-python-script')
     
     if (result.success) {
-      showMessage('重置程序执行成功', 'success')
+      showMessage('重置程序已在新窗口启动', 'success')
     } else {
-      showMessage(result.error || '重置程序执行失败', 'error')
+      showMessage(result.error || '重置程序启动失败', 'error')
     }
   } catch (error) {
     const err = error as any
@@ -276,9 +258,6 @@ const startKeepAlive = async () => {
     showMessage(errorMessage, 'error')
   } finally {
     isKeepAliveRunning.value = false
-    // 清除监听器
-    window.electron.ipcRenderer.removeListeners('python-output')
-    window.electron.ipcRenderer.removeListeners('python-error')
   }
 }
 

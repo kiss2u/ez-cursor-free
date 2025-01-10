@@ -4,8 +4,8 @@ copyright: Copyright © Soleil 2025
 directories:
   buildResources: build
 files:
-  - "workspace/**"
-  - "out/**"
+  - 'workspace/**'
+  - 'out/**'
   - '!**/.vscode/*'
   - '!src/*'
   - '!electron.vite.config.{js,ts,mjs,cjs}'

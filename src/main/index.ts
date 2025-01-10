@@ -8,6 +8,8 @@ import { platform } from 'os'
 import { StorageData, ModifyResult, CurrentIds } from './types'
 import { compare } from 'semver'
 import { spawn, spawnSync } from 'child_process'
+import path from 'path'
+import { exec } from 'child_process'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -237,86 +239,48 @@ app.whenReady().then(() => {
 
   // 添加保活处理器
   ipcMain.handle('start-keep-alive', async () => {
-    return new Promise((resolve, reject) => {
-      try {
-        const extDir = copyExtensionFiles()
-        if (!extDir) {
-          return reject({ 
-            success: false, 
-            error: '插件目录准备失败，请检查文件权限' 
-          })
-        }
-
-        const workspacePath = getWorkspacePath()
-        const pythonScriptPath = join(workspacePath, 'cursor_pro_keep_alive.py')
-        
-        if (!existsSync(pythonScriptPath)) {
-          return reject({ 
-            success: false, 
-            error: 'Python脚本不存在' 
-          })
-        }
-
-        const pythonProcess = spawn('python', [
-          '-u',  // 无缓冲输出
-          pythonScriptPath,
-          '--extension-path', extDir
-        ], {
-          env: {
-            ...process.env,
-            PYTHONIOENCODING: 'utf-8',
-            LANG: 'zh_CN.UTF-8',
-            PYTHONUNBUFFERED: '1'  // 确保Python输出无缓冲
-          }
-        })
-
-        let output = ''
-        let error = ''
-
-        pythonProcess.stdout.on('data', (data) => {
-          const message = data.toString()
-          output += message
-          // 发送输出到渲染进程
-          if (mainWindow) {
-            mainWindow.webContents.send('keep-alive-output', message)
-          }
-        })
-
-        pythonProcess.stderr.on('data', (data) => {
-          const message = data.toString()
-          error += message
-          // 发送错误到渲染进程
-          if (mainWindow) {
-            mainWindow.webContents.send('keep-alive-error', message)
-          }
-        })
-
-        pythonProcess.on('close', (code) => {
-          if (code === 0) {
-            resolve({ success: true, output })
-          } else {
-            reject({ 
-              success: false, 
-              error: error || `Python进程退出，代码: ${code}`, 
-              output 
-            })
-          }
-        })
-
-        pythonProcess.on('error', (err) => {
-          reject({ 
-            success: false, 
-            error: `启动Python进程失败: ${err.message}`, 
-            output 
-          })
-        })
-      } catch (error) {
-        reject({ 
+    try {
+      // 准备插件目录
+      const extDir = copyExtensionFiles()
+      if (!extDir) {
+        return { 
           success: false, 
-          error: `执行出错: ${error instanceof Error ? error.message : String(error)}` 
-        })
+          error: '插件目录准备失败，请检查文件权限' 
+        }
       }
-    })
+
+      const scriptPath = path.join(__dirname, '../../workspace/cursor_pro_keep_alive.py')
+      
+      // 使用 spawn 运行 Python 脚本，添加插件路径参数
+      const pythonProcess = spawn('python', [
+        scriptPath,
+        '--extension-path', extDir
+      ], {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: {
+          ...process.env,
+          PYTHONIOENCODING: 'utf-8',
+          PYTHONUNBUFFERED: '1'
+        }
+      })
+
+      // 处理标准输出
+      pythonProcess.stdout.on('data', (data) => {
+        mainWindow?.webContents.send('python-output', data.toString())
+      })
+
+      // 处理标准错误
+      pythonProcess.stderr.on('data', (data) => {
+        mainWindow?.webContents.send('python-error', data.toString())
+      })
+
+      return { success: true }
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : '运行脚本失败'
+      }
+    }
   })
 
   // 修改 Python 环境检测处理程序
@@ -492,6 +456,66 @@ app.whenReady().then(() => {
       }
     })
   })
+
+  ipcMain.handle('run-python-script', async () => {
+    try {
+      const scriptPath = getScriptPath()
+      const workspacePath = getWorkspacePath()
+      const patchPath = path.join(workspacePath, 'turnstilePatch')
+      
+      // 检查脚本文件是否存在
+      if (!existsSync(scriptPath)) {
+        return {
+          success: false,
+          error: `Python脚本不存在: ${scriptPath}`
+        }
+      }
+
+      // 检查插件目录是否存在
+      if (!existsSync(patchPath)) {
+        return {
+          success: false,
+          error: `插件目录不存在: ${patchPath}`
+        }
+      }
+
+      // 根据操作系统构建不同的命令
+      let command: string;
+      switch (process.platform) {
+        case 'win32':
+          // 使用 /K 保持窗口打开
+          command = `start /MIN cmd.exe /K "cd /d "${workspacePath}" && python "${scriptPath}" && pause"`;
+          break;
+        case 'darwin': // macOS
+          command = `osascript -e 'tell app "Terminal" to do script "cd \\"${workspacePath}\\" && python \\"${scriptPath}\\"" in window 1 hidden'`;
+          break;
+        default: // Linux
+          command = `cd "${workspacePath}" && nohup python "${scriptPath}" > /dev/null 2>&1 &`;
+          break;
+      }
+
+      // 使用 Promise 包装 exec 调用
+      return new Promise((resolve) => {
+        exec(command, (error) => {
+          if (error) {
+            console.error('执行命令失败:', error);
+            resolve({ 
+              success: false, 
+              error: error.message 
+            });
+          } else {
+            resolve({ success: true });
+          }
+        });
+      });
+
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : '运行脚本失败'
+      }
+    }
+  });
 
   createWindow()
 
@@ -751,4 +775,15 @@ function getWorkspacePath(): string {
   
   console.log('Workspace路径:', workspacePath)
   return workspacePath
+}
+
+// 添加一个函数来获取正确的脚本路径
+function getScriptPath(): string {
+  if (app.isPackaged) {
+    // 在打包后的应用中，workspace 目录应该在 resources 目录下
+    return path.join(process.resourcesPath, 'workspace', 'cursor_pro_keep_alive.py')
+  } else {
+    // 在开发环境中，使用项目根目录下的 workspace
+    return path.join(__dirname, '../../workspace/cursor_pro_keep_alive.py')
+  }
 }
