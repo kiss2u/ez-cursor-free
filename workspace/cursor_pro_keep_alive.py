@@ -21,6 +21,12 @@ if sys.stdout.encoding != 'utf-8':
 if sys.stderr.encoding != 'utf-8':
     sys.stderr.reconfigure(encoding='utf-8')
 
+# 添加固定的 URL 配置
+LOGIN_URL = "https://authenticator.cursor.sh"
+SIGN_UP_URL = "https://authenticator.cursor.sh/sign-up"
+SETTINGS_URL = "https://www.cursor.com/settings"
+MAIL_URL = "https://temp-mail.org/zh"
+
 def handle_turnstile(tab):
     try:
         while True:
@@ -130,7 +136,7 @@ def get_temp_email(tab):
 def sign_up_account(browser, tab, account_info):
     """注册账号"""
     print("开始注册...")
-    tab.get(sign_up_url)
+    tab.get(SIGN_UP_URL)  # 使用常量 SIGN_UP_URL
 
     try:
         if tab.ele("@name=first_name"):
@@ -169,6 +175,9 @@ def sign_up_account(browser, tab, account_info):
         return False
 
     handle_turnstile(tab)
+
+    # 创建 EmailVerificationHandler 实例
+    email_handler = EmailVerificationHandler(browser, MAIL_URL)
 
     while True:
         try:
@@ -250,14 +259,8 @@ def main():
         browser_manager = BrowserManager(extension_path=extension_path)
         browser = browser_manager.init_browser()
 
-        # 固定的 URL 配置
-        login_url = "https://authenticator.cursor.sh"
-        sign_up_url = "https://authenticator.cursor.sh/sign-up"
-        settings_url = "https://www.cursor.com/settings"
-        mail_url = "https://temp-mail.org/zh"
-
         # 打开临时邮箱标签页
-        mail_tab = browser.new_tab(mail_url)
+        mail_tab = browser.new_tab(MAIL_URL)
         browser.activate_tab(mail_tab)
         time.sleep(2)
 
@@ -265,7 +268,7 @@ def main():
         email_js = get_temp_email(mail_tab)
 
         # 初始化邮箱验证处理器
-        email_handler = EmailVerificationHandler(browser, mail_url)
+        email_handler = EmailVerificationHandler(browser, MAIL_URL)
 
         # 生成账号信息
         email_generator = EmailGenerator()
@@ -273,7 +276,7 @@ def main():
         account_info = email_generator.get_account_info()
 
         # 打开注册标签页
-        signup_tab = browser.new_tab(sign_up_url)
+        signup_tab = browser.new_tab(SIGN_UP_URL)
         browser.activate_tab(signup_tab)
         time.sleep(2)
 
