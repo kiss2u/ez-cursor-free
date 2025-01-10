@@ -2,7 +2,6 @@ from DrissionPage import ChromiumOptions, Chromium
 import sys
 import os
 import logging
-import argparse
 
 
 class BrowserManager:
@@ -22,21 +21,17 @@ class BrowserManager:
         
         # 尝试加载插件
         try:
-            extension_path = self.extension_path or self._get_extension_path()
-            if extension_path and os.path.exists(extension_path):
-                # 检查插件文件是否完整
-                required_files = ['manifest.json', 'content.js']
-                has_all_files = all(os.path.exists(os.path.join(extension_path, f)) for f in required_files)
-                
-                if has_all_files:
-                    co.add_extension(extension_path)
-                else:
-                    logging.warning("插件目录存在但文件不完整，跳过加载插件")
+            extension_path = self._get_extension_path()
+            if extension_path:
+                print(f"正在加载插件: {extension_path}")
+                co.add_extension(extension_path)
+                print("插件加载成功")
             else:
-                logging.warning("插件目录不存在或无效，跳过加载插件")
+                print("未找到插件目录")
         except Exception as e:
-            logging.warning(f"加载插件时出错: {e}")
+            print(f"加载插件时出错: {e}")
 
+        # 基本配置
         co.set_user_agent(
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.92 Safari/537.36"
         )
@@ -48,25 +43,36 @@ class BrowserManager:
         if sys.platform == "darwin":
             co.set_argument("--no-sandbox")
             co.set_argument("--disable-gpu")
+        else:
+            co.set_argument("--disable-gpu")
 
         return co
 
     def _get_extension_path(self):
         """获取插件路径"""
-        if self.extension_path:
+        # 如果指定了插件路径，优先使用
+        if self.extension_path and os.path.exists(self.extension_path):
             return self.extension_path
             
-        root_dir = os.getcwd()
-        extension_path = os.path.join(root_dir, "turnstilePatch")
-
+        # 获取脚本所在目录
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        extension_path = os.path.join(script_dir, "turnstilePatch")
+        
+        # 如果是打包后的环境
         if hasattr(sys, "_MEIPASS"):
             extension_path = os.path.join(sys._MEIPASS, "turnstilePatch")
-
-        if not os.path.exists(extension_path):
-            logging.warning(f"插件目录不存在: {extension_path}")
-            return None
-
-        return extension_path
+        
+        # 检查插件文件是否完整
+        if os.path.exists(extension_path):
+            required_files = ['manifest.json', 'content.js']
+            if all(os.path.exists(os.path.join(extension_path, f)) for f in required_files):
+                return extension_path
+            else:
+                print(f"插件目录 {extension_path} 文件不完整")
+        else:
+            print(f"插件目录不存在: {extension_path}")
+        
+        return None
 
     def quit(self):
         """关闭浏览器"""

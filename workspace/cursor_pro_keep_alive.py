@@ -241,20 +241,26 @@ def main():
 
     browser_manager = None
     try:
-        ExitCursor()
-        extension_path = args.extension_path
-        if extension_path:
-            print(f"使用指定的插件路径: {extension_path}")
-            if not os.path.exists(extension_path):
-                print(f"警告: 指定的插件路径不存在: {extension_path}")
+        ExitCursor()  # 在调试时可以注释掉
+        
+        # 获取脚本所在目录
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        default_extension_path = os.path.join(script_dir, "turnstilePatch")
+        
+        # 使用命令行参数或默认路径
+        extension_path = args.extension_path or default_extension_path
+        
+        if os.path.exists(extension_path):
+            required_files = ['manifest.json', 'content.js']
+            missing_files = [f for f in required_files 
+                           if not os.path.exists(os.path.join(extension_path, f))]
+            if missing_files:
+                print(f"警告: 插件目录缺少文件: {', '.join(missing_files)}")
             else:
-                required_files = ['manifest.json', 'content.js']
-                missing_files = [f for f in required_files 
-                               if not os.path.exists(os.path.join(extension_path, f))]
-                if missing_files:
-                    print(f"警告: 插件目录缺少文件: {', '.join(missing_files)}")
-                else:
-                    print("插件文件检查通过")
+                print(f"使用插件目录: {extension_path}")
+        else:
+            print(f"插件目录不存在: {extension_path}")
+            extension_path = None
         
         browser_manager = BrowserManager(extension_path=extension_path)
         browser = browser_manager.init_browser()

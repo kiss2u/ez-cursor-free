@@ -4,8 +4,12 @@
     "src/renderer/src/env.d.ts",
     "src/renderer/src/**/*",
     "src/renderer/src/**/*.vue",
-    "src/preload/*.d.ts",
+    "src/preload/*.ts",
     "src/main/types.ts"
+  ],
+  "exclude": [
+    "src/preload/*.d.ts",
+    "src/preload/index.d.ts"
   ],
   "compilerOptions": {
     "composite": true,
