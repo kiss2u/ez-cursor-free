@@ -15,7 +15,6 @@ files:
 asar: true
 asarUnpack:
   - resources/**
-  - workspace/**
 extraResources:
   - from: "workspace"
     to: "workspace"

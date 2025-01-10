@@ -36,41 +36,52 @@ class EmailVerificationHandler:
         code = None
         # 等待并点击验证邮件
         while True:
-            # 查找收件箱列表
-            inbox_list = tab.ele("@class=inbox-dataList")
-            if inbox_list:
-                # 查找所有邮件标题
-                mail_links = tab.eles("@class=viewLink title-subject")
-                found_email = False
-                for link in mail_links:
-                    if link.text == "Verify your email address":
-                        print("加载邮件...")
-                        link.click()
-                        found_email = True
-                        time.sleep(1)
+            try:
+                # 查找邮件表格中的所有行
+                email_row = tab.ele("css:tbody > tr.border-b.cursor-pointer", timeout=2)
+                if email_row:
+                    # 查找主题单元格
+                    subject_cell = email_row.ele("css:td:nth-child(2)")
+                    if subject_cell and "Verify your email address" in subject_cell.text:
+                        print("找到验证邮件，正在打开...")
+                        email_row.click()
+                        time.sleep(2)
                         break
-                if found_email:
-                    break
-            time.sleep(1)
+                
+                print("等待验证邮件...")
+                time.sleep(2)
+                # 刷新页面
+                tab.refresh()
+                time.sleep(3)
+                
+            except Exception as e:
+                print(f"查找邮件时出错: {str(e)}")
+                time.sleep(2)
 
         # 提取验证码
-        while True:
-            content_element = tab.ele("@class=inbox-data-content-intro")
-            if content_element:
-                email_content = content_element.text
-                if email_content:  # 确保内容不为空
-                    # 尝试直接匹配6位数字
-                    verification_code = re.search(r'\b(\d{6})\b', email_content)
-                    if verification_code:
-                        code = verification_code.group(1)
-                        print("验证码：", code)
-                        break
-            time.sleep(1)
-
-            if not code:
-                print("无法获取验证码")
-
-        return code
+        max_retries = 10
+        for attempt in range(max_retries):
+            try:
+                # 查找邮件内容区域
+                content_td = tab.ele("css:td.px-3.text-black.text-base", timeout=2)
+                if content_td:
+                    content = content_td.text
+                    if content:
+                        matches = re.findall(r'\b\d{6}\b', content)
+                        for match in matches:
+                            if "verification code" in content.lower() or "verify" in content.lower():
+                                print(f"从内容中提取到验证码: {match}")
+                                return match
+                
+                print(f"等待验证码加载... ({attempt + 1}/{max_retries})")
+                time.sleep(2)
+                
+            except Exception as e:
+                print(f"提取验证码时出错: {str(e)}")
+                time.sleep(2)
+        
+        print("无法获取验证码")
+        return None
 
     def _cleanup_mail(self, tab):
         if tab.ele("@id=delete_mail"):

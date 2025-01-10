@@ -88,6 +88,7 @@ You've reached your trial request limit.
 - Python 3.8 或更高版本
 - 网络连接
 - 系统环境变量中已添加 Python
+- Google Chrome浏览器
 
 ## 功能特点
 
@@ -107,6 +108,8 @@ You've reached your trial request limit.
 2. 从 [Releases](https://github.com/GalacticDevOps/ez-cursor-free/releases) 页面下载最新版本
 3. 安装并运行应用
 4. 首次运行时会自动检查环境并安装依赖
+   - Windows用户请使用管理员权限运行
+   - Linux/Mac用户可能需要使用 sudo 运行 pip 命令
 5. 根据需要使用相应功能
 6. 重启 Cursor 以应用更改
 
@@ -117,6 +120,17 @@ You've reached your trial request limit.
 1. 访问 [Python 官网](https://www.python.org/downloads/) 下载并安装 Python 3.8+
 2. 安装时勾选"Add Python to PATH"选项
 3. 重启应用以重新检测环境
+4. 如果依赖安装失败，可以手动执行：
+   ```bash
+   # Windows
+   pip install -r "%APPDATA%\ez-cursor-free\resources\workspace\requirements.txt"
+   
+   # Mac
+   pip3 install -r "~/Library/Application Support/ez-cursor-free/resources/workspace/requirements.txt"
+   
+   # Linux
+   pip3 install -r ~/.config/ez-cursor-free/resources/workspace/requirements.txt
+   ```
 
 ### 📦 手动安装
 

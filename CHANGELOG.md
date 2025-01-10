@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2024-01-10
+
+### Fixed
+- 修复打包后找不到 Python 相关路径的问题
+- 修复依赖安装失败的问题
+- 改进 Python 环境检测逻辑
+- 优化路径处理机制
+
+### Added
+- 添加详细的环境配置说明
+- 添加手动安装依赖的说明
+- 添加更多的错误提示和日志输出
+
+### Changed
+- 优化依赖安装流程
+- 改进错误处理机制
+- 更新文档说明
+
 ## [1.0.3] - 2024-01-10
 
 ### Added

@@ -25,7 +25,7 @@ if sys.stderr.encoding != 'utf-8':
 LOGIN_URL = "https://authenticator.cursor.sh"
 SIGN_UP_URL = "https://authenticator.cursor.sh/sign-up"
 SETTINGS_URL = "https://www.cursor.com/settings"
-MAIL_URL = "https://temp-mail.org/zh"
+MAIL_URL = "https://mail.cx/zh/"
 
 def handle_turnstile(tab):
     try:
@@ -107,30 +107,37 @@ def update_cursor_auth(email=None, access_token=None, refresh_token=None):
 
 def get_temp_email(tab):
     """获取临时邮箱地址"""
-    max_retries = 5
-    email_js = None
+    max_retries = 15  # 增加重试次数以应对页面刷新
+    last_email = None
+    stable_count = 0  # 用于记录邮箱地址保持稳定的次数
     
-    email_input = tab.ele("@id=mail")
-    if email_input:
-        email = email_input.attr('value')
-        print(f"当前邮箱: {email}")
-    
-    copy_button = tab.ele("@class=click-to-copy")
-    if copy_button:
-        copy_button.click()
-        print("邮箱地址已复制到剪贴板")
-
+    print("等待邮箱页面加载...")
     for i in range(max_retries):
-        email_js = tab.run_js('return document.getElementById("mail").value')
-        if email_js:
-            print(f"获取到邮箱地址: {email_js}")
-            break
-        print(f"等待邮箱加载... ({i+1}/{max_retries})")
-        time.sleep(2)
-
-    if not email_js:
-        raise ValueError("无法获取临时邮箱地址")
-    return email_js
+        try:
+            # 直接获取带有特定 class 和 disabled 属性的输入框
+            email_input = tab.ele("css:input.bg-gray-200[disabled]", timeout=3)
+            if email_input:
+                current_email = email_input.attr('value')
+                if current_email and '@' in current_email:
+                    if current_email == last_email:
+                        stable_count += 1
+                        if stable_count >= 2:  # 连续两次获取到相同的邮箱地址
+                            print(f"邮箱地址已稳定: {current_email}")
+                            return current_email
+                    else:
+                        stable_count = 0
+                        last_email = current_email
+                        print(f"检测到邮箱地址: {current_email}，等待稳定...")
+            
+            print(f"等待邮箱加载... ({i+1}/{max_retries})")
+            time.sleep(2)
+            
+        except Exception as e:
+            print(f"获取邮箱时出错: {str(e)}")
+            time.sleep(2)
+            stable_count = 0  # 发生错误时重置稳定计数
+    
+    raise ValueError("无法获取稳定的临时邮箱地址")
 
 
 def sign_up_account(browser, tab, account_info):
@@ -200,8 +207,58 @@ def sign_up_account(browser, tab, account_info):
     handle_turnstile(tab)
     return True
 
+def handle_verification_code(browser, tab, account_info):
+    """处理验证码"""
+    email_handler = EmailVerificationHandler(browser, MAIL_URL)
+    
+    max_wait = 30
+    start_time = time.time()
+    
+    while time.time() - start_time < max_wait:
+        try:
+            if tab.ele("Account Settings"):
+                print("注册成功")
+                return True
+                
+            if tab.ele("@data-index=0"):
+                code = email_handler.get_verification_code(account_info["email"])
+                if not code:
+                    print("无法获取验证码")
+                    return False
+
+                print(f"输入验证码: {code}")
+                for i, digit in enumerate(code):
+                    tab.ele(f"@data-index={i}").input(digit)
+                    time.sleep(random.uniform(0.1, 0.3))
+                return True
+                
+            time.sleep(2)
+            
+        except Exception as e:
+            print(f"处理验证码时出错: {str(e)}")
+            time.sleep(2)
+    
+    print("验证码处理超时")
+    return False
+
 
 class EmailGenerator:
+    # 常用英文名列表
+    FIRST_NAMES = [
+        "james", "john", "robert", "michael", "william", "david", "richard", "joseph",
+        "thomas", "charles", "christopher", "daniel", "matthew", "anthony", "donald",
+        "emma", "olivia", "ava", "isabella", "sophia", "mia", "charlotte", "amelia",
+        "harper", "evelyn", "abigail", "emily", "elizabeth", "sofia", "madison"
+    ]
+    
+    # 常用英文姓氏
+    LAST_NAMES = [
+        "smith", "johnson", "williams", "brown", "jones", "garcia", "miller", "davis",
+        "rodriguez", "martinez", "hernandez", "lopez", "gonzalez", "wilson", "anderson",
+        "thomas", "taylor", "moore", "jackson", "martin", "lee", "perez", "thompson",
+        "white", "harris", "sanchez", "clark", "ramirez", "lewis", "robinson"
+    ]
+    
     def __init__(
         self,
         password="".join(
@@ -210,13 +267,14 @@ class EmailGenerator:
                 k=12,
             )
         ),
-        first_name=''.join(random.choices("abcdefghijklmnopqrstuvwxyz", k=6)),
-        last_name=''.join(random.choices("abcdefghijklmnopqrstuvwxyz", k=6)),
+        first_name=None,
+        last_name=None,
     ):
         self.default_password = password
-        self.default_first_name = first_name
-        self.default_last_name = last_name
-        self.email = None  # 添加 email 属性
+        # 随机选择名和姓
+        self.default_first_name = first_name or random.choice(self.FIRST_NAMES)
+        self.default_last_name = last_name or random.choice(self.LAST_NAMES)
+        self.email = None
 
     def set_email(self, email):
         """设置邮箱地址"""
@@ -229,8 +287,8 @@ class EmailGenerator:
         return {
             "email": self.email,
             "password": self.default_password,
-            "first_name": self.default_first_name,
-            "last_name": self.default_last_name,
+            "first_name": self.default_first_name.capitalize(),  # 首字母大写
+            "last_name": self.default_last_name.capitalize(),    # 首字母大写
         }
 
 
@@ -268,8 +326,8 @@ def main():
         # 打开临时邮箱标签页
         mail_tab = browser.new_tab(MAIL_URL)
         browser.activate_tab(mail_tab)
-        time.sleep(2)
-
+        time.sleep(5)  # 给页面初始加载一些时间
+        
         # 获取临时邮箱地址
         email_js = get_temp_email(mail_tab)
 

@@ -417,7 +417,6 @@ app.whenReady().then(() => {
         console.log('文件是否存在:', existsSync(requirementsPath))
         
         if (!existsSync(requirementsPath)) {
-          // 尝试列出workspace目录内容
           try {
             const fs = require('fs')
             console.log('Workspace目录内容:', fs.readdirSync(workspacePath))
@@ -433,11 +432,17 @@ app.whenReady().then(() => {
         }
 
         console.log('开始安装依赖...')
-        const pipProcess = spawn('pip', ['install', '-r', requirementsPath], {
+        // 修改这里，使用引号包裹路径，并确保使用正确的路径分隔符
+        const pythonPath = findPythonPath()
+        const pipArgs = ['-m', 'pip', 'install', '-r', `"${requirementsPath.replace(/\\/g, '/')}"`]
+        console.log('执行命令:', pythonPath, pipArgs.join(' '))
+        
+        const pipProcess = spawn(pythonPath, pipArgs, {
           shell: true,
           env: {
             ...process.env,
-            PYTHONIOENCODING: 'utf-8'
+            PYTHONIOENCODING: 'utf-8',
+            PYTHONUNBUFFERED: '1'
           }
         })
 
@@ -469,6 +474,14 @@ app.whenReady().then(() => {
               error: error || '安装失败'
             })
           }
+        })
+
+        pipProcess.on('error', (err) => {
+          console.error('pip进程错误:', err)
+          resolve({
+            success: false,
+            error: `pip进程错误: ${err.message}`
+          })
         })
       } catch (error) {
         console.error('安装依赖过程出错:', error)
