@@ -7,7 +7,7 @@ import { existsSync, readFileSync, writeFileSync, chmodSync, statSync, copyFileS
 import { platform } from 'os'
 import { StorageData, ModifyResult, CurrentIds } from './types'
 import { compare } from 'semver'
-import { spawn } from 'child_process'
+import { spawn, spawnSync } from 'child_process'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -317,6 +317,140 @@ app.whenReady().then(() => {
     })
   })
 
+  // 修改 Python 环境检测处理程序
+  ipcMain.handle('check-python-env', async () => {
+    return new Promise((resolve) => {
+      const pythonPath = findPythonPath()
+      console.log('使用 Python 路径:', pythonPath)
+
+      // 使用 Python 的 --version 命令来检测版本
+      const pythonProcess = spawn(pythonPath, ['--version'], {
+        shell: true,
+        env: {
+          ...process.env,
+          PYTHONIOENCODING: 'utf-8',
+          PYTHONUNBUFFERED: '1'
+        }
+      })
+
+      let output = ''
+      let error = ''
+
+      pythonProcess.stdout.on('data', (data) => {
+        output += data.toString()
+        console.log('Python 标准输出:', data.toString())
+      })
+
+      pythonProcess.stderr.on('data', (data) => {
+        error += data.toString()
+        console.error('Python 错误输出:', data.toString())
+      })
+
+      pythonProcess.on('error', (err) => {
+        console.error('Python 进程错误:', err)
+        resolve({
+          success: false,
+          needsInstall: true,
+          error: `Python 执行失败: ${err.message}`,
+          hint: '请确保 Python 已正确安装并添加到系统环境变量中'
+        })
+      })
+
+      pythonProcess.on('close', (code) => {
+        console.log('Python 进程退出码:', code)
+        
+        if (code !== 0) {
+          resolve({
+            success: false,
+            needsInstall: true,
+            error: error || 'Python 执行失败',
+            hint: '请确保 Python 已正确安装并添加到系统环境变量中。\n' +
+                  '如果已安装 Python，请检查系统环境变量是否正确配置。'
+          })
+          return
+        }
+
+        try {
+          // 解析版本字符串，格式通常是 "Python X.Y.Z"
+          const versionMatch = output.match(/Python (\d+)\.(\d+)\.(\d+)/i)
+          if (!versionMatch) {
+            throw new Error('无法解析Python版本')
+          }
+
+          const major = parseInt(versionMatch[1])
+          const minor = parseInt(versionMatch[2])
+          
+          resolve({
+            success: true,
+            needsInstall: false,
+            pythonPath,
+            pythonVersion: output.trim(),
+            isVersionValid: major === 3 && minor >= 8,
+            versionDetails: {
+              major,
+              minor
+            }
+          })
+        } catch (e) {
+          console.error('解析 Python 版本失败:', e)
+          resolve({
+            success: false,
+            needsInstall: true,
+            error: '无法解析 Python 版本信息',
+            hint: '请确保 Python 环境正常，并重新启动应用'
+          })
+        }
+      })
+    })
+  })
+
+  // 修改依赖安装处理程序
+  ipcMain.handle('install-requirements', async (_, workspacePath: string) => {
+    return new Promise((resolve) => {
+      const requirementsPath = join(workspacePath, 'requirements.txt')
+      if (!existsSync(requirementsPath)) {
+        resolve({
+          success: false,
+          error: '找不到 requirements.txt 文件'
+        })
+        return
+      }
+
+      const pipProcess = spawn('pip', ['install', '-r', requirementsPath], {
+        shell: true,
+        env: {
+          ...process.env,
+          PYTHONIOENCODING: 'utf-8'
+        }
+      })
+
+      let output = ''
+      let error = ''
+
+      pipProcess.stdout.on('data', (data) => {
+        output += data.toString()
+      })
+
+      pipProcess.stderr.on('data', (data) => {
+        error += data.toString()
+      })
+
+      pipProcess.on('close', (code) => {
+        if (code === 0) {
+          resolve({
+            success: true,
+            output
+          })
+        } else {
+          resolve({
+            success: false,
+            error: error || '安装失败'
+          })
+        }
+      })
+    })
+  })
+
   createWindow()
 
   app.on('activate', function () {
@@ -517,4 +651,52 @@ function copyExtensionFiles() {
     console.error('插件目录准备失败:', error)
     return null
   }
+}
+
+// 修改 findPythonPath 函数
+function findPythonPath(): string {
+  const isWin = process.platform === 'win32'
+  const possiblePaths = [
+    'python',
+    'python3',
+    'py',
+    // Windows 常见路径
+    'C:\\Python39\\python.exe',
+    'C:\\Python38\\python.exe',
+    'C:\\Python310\\python.exe',
+    'C:\\Python311\\python.exe',
+    // Windows 用户目录下的 Python
+    `C:\\Users\\${process.env.USERNAME}\\AppData\\Local\\Programs\\Python\\Python39\\python.exe`,
+    `C:\\Users\\${process.env.USERNAME}\\AppData\\Local\\Programs\\Python\\Python38\\python.exe`,
+    `C:\\Users\\${process.env.USERNAME}\\AppData\\Local\\Programs\\Python\\Python310\\python.exe`,
+    `C:\\Users\\${process.env.USERNAME}\\AppData\\Local\\Programs\\Python\\Python311\\python.exe`,
+    // Unix-like 系统路径
+    '/usr/bin/python3',
+    '/usr/local/bin/python3',
+    '/opt/homebrew/bin/python3'
+  ]
+
+  for (const path of possiblePaths) {
+    try {
+      const command = isWin ? `"${path}" --version` : `${path} --version`
+      const result = spawnSync(command, [], {
+        shell: true,
+        stdio: 'pipe',
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          PYTHONIOENCODING: 'utf-8'
+        }
+      })
+
+      if (result.status === 0) {
+        console.log(`找到可用的 Python: ${path}`)
+        return path
+      }
+    } catch (e) {
+      continue
+    }
+  }
+
+  return isWin ? 'python.exe' : 'python3'
 }

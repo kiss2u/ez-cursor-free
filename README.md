@@ -83,6 +83,12 @@ You've reached your trial request limit.
 </table>
 </div>
 
+## 环境要求
+
+- Python 3.8 或更高版本
+- 网络连接
+- 系统环境变量中已添加 Python
+
 ## 功能特点
 
 - 🔄 一键重置功能
@@ -92,13 +98,25 @@ You've reached your trial request limit.
 - 🌓 支持浅色/深色主题
 - 💻 跨平台支持 (Windows, macOS, Linux)
 - 🎨 简洁美观的界面
+- 🔍 自动检测 Python 环境
+- 📦 自动安装所需依赖
 
 ## 安装使用
 
-1. 从 [Releases](https://github.com/GalacticDevOps/ez-cursor-free/releases) 页面下载最新版本
-2. 安装并运行应用
-3. 根据需要使用相应功能
-4. 重启 Cursor 以应用更改
+1. 确保已安装 Python 3.8+ 并添加到环境变量
+2. 从 [Releases](https://github.com/GalacticDevOps/ez-cursor-free/releases) 页面下载最新版本
+3. 安装并运行应用
+4. 首次运行时会自动检查环境并安装依赖
+5. 根据需要使用相应功能
+6. 重启 Cursor 以应用更改
+
+### 环境配置
+
+如果遇到 Python 环境相关问题：
+
+1. 访问 [Python 官网](https://www.python.org/downloads/) 下载并安装 Python 3.8+
+2. 安装时勾选"Add Python to PATH"选项
+3. 重启应用以重新检测环境
 
 ### 📦 手动安装
 
@@ -107,6 +125,7 @@ You've reached your trial request limit.
 ## 注意事项
 
 - 使用功能前请确保已关闭 Cursor
+- 首次使用时请确保网络连接正常以安装依赖
 - 建议修改后将配置文件设为只读模式
 - 如遇问题请查看错误提示或提交 Issue
 

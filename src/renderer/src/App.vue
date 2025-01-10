@@ -186,9 +186,62 @@ const openReleasePage = async () => {
   }
 }
 
+const checkPythonEnvironment = async () => {
+  try {
+    const result = await window.electron.ipcRenderer.invoke('check-python-env')
+    
+    if (!result.success) {
+      if (result.needsInstall) {
+        showMessage(`${result.error}${result.hint ? `\n${result.hint}` : ''}`, 'error')
+        if (!result.pythonPath) {  // 只有在真的找不到 Python 时才打开下载页面
+          setTimeout(() => {
+            window.electron.ipcRenderer.invoke('open-release-page', 'https://www.python.org/downloads/')
+          }, 2000)
+        }
+        return false
+      }
+      showMessage('Python 环境检测失败: ' + result.error, 'error')
+      return false
+    }
+
+    if (!result.isVersionValid) {
+      showMessage(`需要 Python 3.8 或更高版本，当前版本: ${result.pythonVersion}`, 'error')
+      setTimeout(() => {
+        window.electron.ipcRenderer.invoke('open-release-page', 'https://www.python.org/downloads/')
+      }, 2000)
+      return false
+    }
+
+    if (!result.isDependenciesInstalled) {
+      showMessage('正在安装依赖...', 'info')
+      const installResult = await window.electron.ipcRenderer.invoke('install-requirements', 'workspace')
+      
+      if (!installResult.success) {
+        showMessage('依赖安装失败: ' + installResult.error, 'error')
+        return false
+      }
+      
+      showMessage('依赖安装成功', 'success')
+    }
+
+    return true
+  } catch (error) {
+    showMessage('环境检测失败，请确保 Python 已添加到系统环境变量中', 'error')
+    return false
+  }
+}
+
 const startKeepAlive = async () => {
   try {
     isKeepAliveRunning.value = true
+    showMessage('正在检查环境...', 'info')
+    
+    // 先检查 Python 环境
+    if (!await checkPythonEnvironment()) {
+      isKeepAliveRunning.value = false
+      return
+    }
+
     showMessage('正在启动重置程序...', 'info')
     
     // 清除之前的监听器
