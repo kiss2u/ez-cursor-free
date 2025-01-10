@@ -16,6 +16,11 @@ asar: true
 asarUnpack:
   - resources/**
   - workspace/**
+extraResources:
+  - from: "workspace"
+    to: "workspace"
+    filter:
+      - "**/*"
 win:
   executableName: ez-cursor-free
   icon: build/icons/512x512.png

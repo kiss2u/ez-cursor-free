@@ -247,7 +247,9 @@ app.whenReady().then(() => {
           })
         }
 
-        const pythonScriptPath = join(__dirname, '../../workspace/cursor_pro_keep_alive.py')
+        const workspacePath = getWorkspacePath()
+        const pythonScriptPath = join(workspacePath, 'cursor_pro_keep_alive.py')
+        
         if (!existsSync(pythonScriptPath)) {
           return reject({ 
             success: false, 
@@ -405,49 +407,76 @@ app.whenReady().then(() => {
   })
 
   // 修改依赖安装处理程序
-  ipcMain.handle('install-requirements', async (_, workspacePath: string) => {
+  ipcMain.handle('install-requirements', async () => {
     return new Promise((resolve) => {
-      const requirementsPath = join(workspacePath, 'requirements.txt')
-      if (!existsSync(requirementsPath)) {
-        resolve({
-          success: false,
-          error: '找不到 requirements.txt 文件'
-        })
-        return
-      }
-
-      const pipProcess = spawn('pip', ['install', '-r', requirementsPath], {
-        shell: true,
-        env: {
-          ...process.env,
-          PYTHONIOENCODING: 'utf-8'
-        }
-      })
-
-      let output = ''
-      let error = ''
-
-      pipProcess.stdout.on('data', (data) => {
-        output += data.toString()
-      })
-
-      pipProcess.stderr.on('data', (data) => {
-        error += data.toString()
-      })
-
-      pipProcess.on('close', (code) => {
-        if (code === 0) {
-          resolve({
-            success: true,
-            output
-          })
-        } else {
+      try {
+        const workspacePath = getWorkspacePath()
+        const requirementsPath = join(workspacePath, 'requirements.txt')
+        
+        console.log('正在检查requirements.txt路径:', requirementsPath)
+        console.log('文件是否存在:', existsSync(requirementsPath))
+        
+        if (!existsSync(requirementsPath)) {
+          // 尝试列出workspace目录内容
+          try {
+            const fs = require('fs')
+            console.log('Workspace目录内容:', fs.readdirSync(workspacePath))
+          } catch (e) {
+            console.error('无法读取workspace目录:', e)
+          }
+          
           resolve({
             success: false,
-            error: error || '安装失败'
+            error: `找不到 requirements.txt 文件，路径: ${requirementsPath}`
           })
+          return
         }
-      })
+
+        console.log('开始安装依赖...')
+        const pipProcess = spawn('pip', ['install', '-r', requirementsPath], {
+          shell: true,
+          env: {
+            ...process.env,
+            PYTHONIOENCODING: 'utf-8'
+          }
+        })
+
+        let output = ''
+        let error = ''
+
+        pipProcess.stdout.on('data', (data) => {
+          const message = data.toString()
+          output += message
+          console.log('pip安装输出:', message)
+        })
+
+        pipProcess.stderr.on('data', (data) => {
+          const message = data.toString()
+          error += message
+          console.error('pip安装错误:', message)
+        })
+
+        pipProcess.on('close', (code) => {
+          console.log('pip安装进程退出码:', code)
+          if (code === 0) {
+            resolve({
+              success: true,
+              output
+            })
+          } else {
+            resolve({
+              success: false,
+              error: error || '安装失败'
+            })
+          }
+        })
+      } catch (error) {
+        console.error('安装依赖过程出错:', error)
+        resolve({
+          success: false,
+          error: `安装依赖出错: ${error instanceof Error ? error.message : String(error)}`
+        })
+      }
     })
   })
 
@@ -699,4 +728,14 @@ function findPythonPath(): string {
   }
 
   return isWin ? 'python.exe' : 'python3'
+}
+
+// 修改获取 workspace 路径的逻辑
+function getWorkspacePath(): string {
+  const workspacePath = app.isPackaged
+    ? join(process.resourcesPath, 'workspace')
+    : join(__dirname, '../../workspace')
+  
+  console.log('Workspace路径:', workspacePath)
+  return workspacePath
 }
