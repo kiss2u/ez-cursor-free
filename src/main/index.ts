@@ -461,7 +461,6 @@ app.whenReady().then(() => {
     try {
       const scriptPath = getScriptPath()
       const workspacePath = getWorkspacePath()
-      const patchPath = path.join(workspacePath, 'turnstilePatch')
       
       // 检查脚本文件是否存在
       if (!existsSync(scriptPath)) {
@@ -471,23 +470,17 @@ app.whenReady().then(() => {
         }
       }
 
-      // 检查插件目录是否存在
-      if (!existsSync(patchPath)) {
-        return {
-          success: false,
-          error: `插件目录不存在: ${patchPath}`
-        }
-      }
-
       // 根据操作系统构建不同的命令
       let command: string;
       switch (process.platform) {
         case 'win32':
-          // 使用 /K 保持窗口打开
           command = `start /MIN cmd.exe /K "cd /d "${workspacePath}" && python "${scriptPath}" && pause"`;
           break;
         case 'darwin': // macOS
-          command = `osascript -e 'tell app "Terminal" to do script "cd \\"${workspacePath}\\" && python \\"${scriptPath}\\"" in window 1 hidden'`;
+          // 修复 macOS 命令，正确处理路径中的空格和引号
+          command = `osascript -e 'tell application "Terminal"
+            do script "cd \\"${workspacePath.replace(/"/g, '\\"')}\\" && python3 \\"${scriptPath.replace(/"/g, '\\"')}\\"" 
+          end tell'`;
           break;
         default: // Linux
           command = `cd "${workspacePath}" && nohup python "${scriptPath}" > /dev/null 2>&1 &`;
