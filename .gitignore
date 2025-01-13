@@ -7,3 +7,4 @@ out
 pnpm-lock.yaml
 /.idea
 /workspace/__pycache__
+/resources/workspace/__pycache__

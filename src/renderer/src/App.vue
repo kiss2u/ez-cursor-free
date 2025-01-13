@@ -248,7 +248,7 @@ const startKeepAlive = async () => {
     const result = await window.electron.ipcRenderer.invoke('run-python-script')
     
     if (result.success) {
-      showMessage('重置程序已在新窗口启动', 'success')
+      showMessage('重置程序已结束', 'success')
     } else {
       showMessage(result.error || '重置程序启动失败', 'error')
     }

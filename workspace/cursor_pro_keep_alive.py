@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+import psutil
 
 from exit_cursor import ExitCursor
 
@@ -291,6 +292,29 @@ class EmailGenerator:
             "last_name": self.default_last_name.capitalize(),    # 首字母大写
         }
 
+def cleanup_and_exit(browser_manager=None, exit_code=0):
+    """Clean up resources and exit program"""
+    try:
+        # Browser cleanup
+        if browser_manager:
+            logging.info("Closing browser...")
+            browser_manager.quit()
+        
+        # Kill any remaining python processes
+        current_process = psutil.Process()
+        children = current_process.children(recursive=True)
+        for child in children:
+            try:
+                child.terminate()
+            except:
+                pass
+                
+        logging.info("Cleanup completed")
+        sys.exit(exit_code)
+        
+    except Exception as e:
+        logging.error(f"Error during cleanup: {e}")
+        sys.exit(1)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -361,14 +385,15 @@ def main():
             print("注册失败")
 
         print("执行完毕")
+        cleanup_and_exit(browser_manager, 0)
 
     except Exception as e:
         logging.error(f"程序执行出错: {str(e)}")
         import traceback
         logging.error(traceback.format_exc())
+        cleanup_and_exit(browser_manager, 1)
     finally:
-        if browser_manager:
-            browser_manager.quit()
+        cleanup_and_exit(browser_manager, 1)
 
 
 if __name__ == "__main__":
