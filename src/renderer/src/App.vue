@@ -372,7 +372,7 @@ loadCurrentIds()
           <path v-else-if="messageType === 'error'" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
           <path v-else d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-4h2v-2h-2v2zm0-4h2V8h-2v4z"/>
         </svg>
-        {{ message }}
+        <span class="message-text">{{ message }}</span>
         <button class="message-close" @click="closeMessage">
           <svg viewBox="0 0 24 24" width="14" height="14">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -681,6 +681,7 @@ h2 {
   justify-content: center;
   transition: opacity 0.2s;
   pointer-events: auto;
+  flex-shrink: 0;
 }
 
 .message-close:hover {
@@ -1104,5 +1105,33 @@ h2 {
 .keep-alive-log,
 .status-text {
   display: none;
+}
+
+/* 添加消息文本样式 */
+.message-text {
+  flex: 1;
+  min-width: 0; /* 防止文本溢出 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre-wrap; /* 保留换行符并自动换行 */
+  word-wrap: break-word; /* 允许长单词换行 */
+  margin-right: 4px; /* 与关闭按钮保持间距 */
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .message-container {
+    padding: 0 16px;
+  }
+
+  .message {
+    font-size: 13px;
+    padding: 10px 14px;
+    padding-right: 36px;
+  }
+
+  .message-text {
+    line-height: 1.3;
+  }
 }
 </style>
