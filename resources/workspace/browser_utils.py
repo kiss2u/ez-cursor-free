@@ -18,7 +18,9 @@ class BrowserManager:
     def _get_browser_options(self):
         """获取浏览器配置"""
         co = ChromiumOptions()
-        
+        browser_path = os.getenv("BROWSER_PATH", None)
+        if browser_path and os.path.exists(browser_path):
+            co.set_paths(browser_path=browser_path)
         # 尝试加载插件
         try:
             extension_path = self._get_extension_path()

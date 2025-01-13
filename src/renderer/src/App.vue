@@ -608,13 +608,17 @@ h2 {
   z-index: 9999;
   display: flex;
   justify-content: center;
+  width: 100%;
+  max-width: 480px;
+  padding: 0 20px;
+  box-sizing: border-box;
 }
 
 .message {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 16px;
+  padding: 12px 16px;
   border-radius: 8px;
   background: #67c23a;
   color: #fff;
@@ -623,11 +627,12 @@ h2 {
   transform: translateY(-20px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 240px;
-  max-width: 480px;
-  text-align: center;
+  width: 100%;
   position: relative;
   pointer-events: auto;
+  line-height: 1.4;
+  text-align: left;
+  padding-right: 40px;
 }
 
 .message.error {
@@ -638,14 +643,18 @@ h2 {
   background: #e6a23c;
 }
 
+.message.info {
+  background: var(--apple-blue);
+}
+
 .message.show {
   opacity: 1;
   transform: translateY(0);
 }
 
 .message-icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   fill: currentColor;
   flex-shrink: 0;
 }
@@ -657,7 +666,7 @@ h2 {
 
 .message-close {
   position: absolute;
-  right: 8px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -676,10 +685,13 @@ h2 {
 
 .message-close:hover {
   opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .message-close svg {
   fill: currentColor;
+  width: 14px;
+  height: 14px;
 }
 
 .message.warning .message-close svg {
