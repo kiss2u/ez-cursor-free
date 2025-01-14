@@ -69,7 +69,7 @@ def get_cursor_session_token(tab, max_attempts=3, retry_interval=2):
     :param retry_interval: 重试间隔(秒)
     :return: session token 或 None
     """
-    print("开始获取cookie")
+    logging.info("开始获取cookie")
     attempts = 0
 
     while attempts < max_attempts:
@@ -123,18 +123,18 @@ def get_temp_email(tab):
                     if current_email == last_email:
                         stable_count += 1
                         if stable_count >= 2:  # 连续两次获取到相同的邮箱地址
-                            print(f"邮箱地址已稳定: {current_email}")
+                            logging.info(f"邮箱地址已稳定: {current_email}")
                             return current_email
                     else:
                         stable_count = 0
                         last_email = current_email
-                        print(f"检测到邮箱地址: {current_email}，等待稳定...")
+                        logging.info(f"检测到邮箱地址: {current_email}，等待稳定...")
             
             print(f"等待邮箱加载... ({i+1}/{max_retries})")
             time.sleep(2)
             
         except Exception as e:
-            print(f"获取邮箱时出错: {str(e)}")
+            logging.warning(f"获取邮箱时出错: {str(e)}")
             time.sleep(2)
             stable_count = 0  # 发生错误时重置稳定计数
     
@@ -143,7 +143,7 @@ def get_temp_email(tab):
 
 def sign_up_account(browser, tab, account_info):
     """注册账号"""
-    print("开始注册...")
+    logging.info("开始注册...")
     tab.get(SIGN_UP_URL)  # 使用常量 SIGN_UP_URL
 
     try:
@@ -160,7 +160,7 @@ def sign_up_account(browser, tab, account_info):
             tab.actions.click("@type=submit")
 
     except Exception as e:
-        print("打开注册页面失败")
+        logging.warning("打开注册页面失败")
         return False
 
     handle_turnstile(tab)
@@ -171,15 +171,15 @@ def sign_up_account(browser, tab, account_info):
             time.sleep(random.uniform(1, 3))
 
             tab.ele("@type=submit").click()
-            print("请稍等...")
+            logging.info("请稍等...")
 
     except Exception as e:
-        print("执行失败")
+        logging.warning("执行失败")
         return False
 
     time.sleep(random.uniform(1, 3))
     if tab.ele("This email is not available."):
-        print("执行失败")
+        logging.warning("执行失败")
         return False
 
     handle_turnstile(tab)
@@ -218,16 +218,16 @@ def handle_verification_code(browser, tab, account_info):
     while time.time() - start_time < max_wait:
         try:
             if tab.ele("Account Settings"):
-                print("注册成功")
+                logging.info("注册成功")
                 return True
                 
             if tab.ele("@data-index=0"):
                 code = email_handler.get_verification_code(account_info["email"])
                 if not code:
-                    print("无法获取验证码")
+                    logging.error("无法获取验证码")
                     return False
 
-                print(f"输入验证码: {code}")
+                logging.info(f"输入验证码: {code}")
                 for i, digit in enumerate(code):
                     tab.ele(f"@data-index={i}").input(digit)
                     time.sleep(random.uniform(0.1, 0.3))
@@ -236,10 +236,10 @@ def handle_verification_code(browser, tab, account_info):
             time.sleep(2)
             
         except Exception as e:
-            print(f"处理验证码时出错: {str(e)}")
+            logging.error(f"处理验证码时出错: {str(e)}")
             time.sleep(2)
     
-    print("验证码处理超时")
+    logging.error("验证码处理超时")
     return False
 
 
@@ -333,7 +333,7 @@ def main():
         extension_path = args.extension_path or default_extension_path
         
         if os.path.exists(extension_path):
-            required_files = ['manifest.json', 'content.js']
+            required_files = ['manifest.json', 'script.js']
             missing_files = [f for f in required_files 
                            if not os.path.exists(os.path.join(extension_path, f))]
             if missing_files:
@@ -375,16 +375,16 @@ def main():
         if sign_up_account(browser, signup_tab, account_info):
             token = get_cursor_session_token(signup_tab)
             if token:
-                print(f"注册成功! Token: {token}")
+                logging.info(f"注册成功! Token: {token}")
                 update_cursor_auth(
                     email=account_info["email"], access_token=token, refresh_token=token
                 )
             else:
-                print("获取token失败")
+                logging.error("获取token失败")
         else:
-            print("注册失败")
+            logging.error("注册失败")
 
-        print("执行完毕")
+        logging.info("执行完毕")
         cleanup_and_exit(browser_manager, 0)
 
     except Exception as e:

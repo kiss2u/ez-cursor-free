@@ -474,7 +474,7 @@ app.whenReady().then(() => {
       let command: string;
       switch (process.platform) {
         case 'win32':
-          command = `start /MIN cmd.exe /K "cd /d "${workspacePath}" && python "${scriptPath}" && pause"`;
+          command = `start /B cmd.exe /K "cd /d "${workspacePath}" && python "${scriptPath}" && exit"`;
           break;
         case 'darwin': // macOS
           // 修复 macOS 命令，正确处理路径中的空格和引号

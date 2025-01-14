@@ -25,13 +25,12 @@ class BrowserManager:
         try:
             extension_path = self._get_extension_path()
             if extension_path:
-                print(f"正在加载插件: {extension_path}")
                 co.add_extension(extension_path)
-                print("插件加载成功")
+                logging.info("插件加载成功")
             else:
-                print("未找到插件目录")
+                logging.warning("未找到插件目录")
         except Exception as e:
-            print(f"加载插件时出错: {e}")
+            logging.warning(f"加载插件时出错: {e}")
 
         # 基本配置
         co.set_user_agent(
@@ -39,8 +38,11 @@ class BrowserManager:
         )
         co.set_pref("credentials_enable_service", False)
         co.set_argument("--hide-crash-restore-bubble")
+        proxy = os.getenv('BROWSER_PROXY')
+        if proxy:
+            co.set_proxy(proxy)
         co.auto_port()
-        co.headless(True)
+        co.headless(os.getenv('BROWSER_HEADLESS', 'True').lower() == 'true')
 
         if sys.platform == "darwin":
             co.set_argument("--no-sandbox")
@@ -64,13 +66,13 @@ class BrowserManager:
         
         # 检查插件文件是否完整
         if os.path.exists(extension_path):
-            required_files = ['manifest.json', 'content.js']
+            required_files = ['manifest.json', 'script.js']
             if all(os.path.exists(os.path.join(extension_path, f)) for f in required_files):
                 return extension_path
             else:
-                print(f"插件目录 {extension_path} 文件不完整")
+                logging.warning(f"插件目录 {extension_path} 文件不完整")
         else:
-            print(f"插件目录不存在: {extension_path}")
+            raise FileNotFoundError(f"插件不存在: {extension_path}")
         
         return None
 

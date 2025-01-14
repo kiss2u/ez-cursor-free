@@ -5,11 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.6-alpha1] - 2024-01-13
+## [1.0.8] - 2024-01-14
 
 ### Fixed
-- 修复MacOs下一键重置功能异常的问题
-- 修复了一些已知的可能问题
+- Fix some known issues
+
+### Pending
+- Email problem for receiving emails
 
 ## [1.0.3] - 2024-01-10
 
