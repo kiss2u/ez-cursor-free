@@ -231,12 +231,52 @@ const checkPythonEnvironment = async () => {
   }
 }
 
+const openGithubStar = () => {
+  window.electron.ipcRenderer.invoke('open-release-page', 'https://github.com/GalacticDevOps/ez-cursor-free')
+}
+
 const startKeepAlive = async () => {
   try {
     isKeepAliveRunning.value = true
+    
+    const shouldContinue = await new Promise<boolean>(resolve => {
+      const starMessage = document.createElement('div')
+      starMessage.className = 'star-message'
+      starMessage.innerHTML = `
+        <div class="star-content">
+          <h3>感谢您的 ⭐️</h3>
+          <p>如果这个工具对你有帮助，请为本项目点个 Star！</p>
+          <div class="star-buttons">
+            <button class="star-btn primary">去点亮 ⭐️</button>
+            <button class="star-btn secondary">下次一定</button>
+          </div>
+        </div>
+      `
+      document.body.appendChild(starMessage)
+
+      const primaryBtn = starMessage.querySelector('.star-btn.primary')
+      const secondaryBtn = starMessage.querySelector('.star-btn.secondary')
+
+      primaryBtn?.addEventListener('click', () => {
+        openGithubStar()
+        starMessage.remove()
+        resolve(true)
+      })
+
+      secondaryBtn?.addEventListener('click', () => {
+        openGithubStar()
+        starMessage.remove()
+        resolve(true)
+      })
+    })
+
+    if (!shouldContinue) {
+      isKeepAliveRunning.value = false
+      return
+    }
+
     showMessage('正在检查环境...', 'info')
     
-    // 先检查 Python 环境
     if (!await checkPythonEnvironment()) {
       isKeepAliveRunning.value = false
       return
@@ -244,7 +284,6 @@ const startKeepAlive = async () => {
 
     showMessage('正在启动重置程序...', 'info')
     
-    // 调用新的命令行执行函数
     const result = await window.electron.ipcRenderer.invoke('run-python-script')
     
     if (result.success) {
@@ -1132,6 +1171,95 @@ h2 {
 
   .message-text {
     line-height: 1.3;
+  }
+}
+
+/* Star 消息样式 */
+.star-message {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.star-content {
+  background: var(--card-background);
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+  animation: slideUp 0.3s ease-out;
+}
+
+.star-content h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.star-content p {
+  margin: 0 0 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.star-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.star-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.star-btn.primary {
+  background: var(--apple-blue);
+  color: white;
+}
+
+.star-btn.primary:hover {
+  background: var(--apple-blue-hover);
+}
+
+.star-btn.secondary {
+  background: var(--background);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.star-btn.secondary:hover {
+  background: var(--button-secondary-hover);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>

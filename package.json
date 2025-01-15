@@ -1,6 +1,6 @@
 {
   "name": "ez-cursor-free",
-  "version": "1.0.8",
+  "version": "1.0.8-alpha1",
   "description": "Ez2 Use Cursor Free Tools",
   "main": "./out/main/index.js",
   "author": "Soleil",

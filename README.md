@@ -4,6 +4,7 @@
 
 ⚠️ This tool is only available to those who are unable to pay but urgently need to use it.
 
+如果本项目对你有帮助，请给本项目点一个star⭐️，感谢您的支持！
 
 <div align="center">
 
@@ -29,7 +30,13 @@
 
 </div>
 
-⚠️ 项目运行需要python环境，请确保安装python3.10及以上版本
+⚠️ 项目运行需要python环境，请确保安装python3.8及以上版本
+
+如果没有Google Chrome，可以从[这里](https://www.google.com/intl/en_pk/chrome/)下载Google Chrome
+
+![alt text](/screenshots/alert.png)
+
+如果遇到这个问题，请点击[这里](https://sysin.org/blog/macos-if-crashes-when-opening/)查看解决方案
 
 # 🌏 Chinese
 
@@ -55,32 +62,10 @@ You've reached your trial request limit.
 ### 💻 系统支持
 
 <div align="center">
-<table>
-<tr>
-<td>
 
 **Windows** ✅
-- x64 (64-bit)
-- x86 (32-bit)
-
-</td>
-<td>
-
-**macOS** ✅
-- Intel (x64)
-- Apple Silicon (M1/M2)
-
-</td>
-<td>
-
-**Linux** ✅
-- x64 (64-bit)
-- x86 (32-bit)
-- ARM64
-
-</td>
-</tr>
-</table>
+**macOS**   ✅
+**Linux**   ✅
 </div>
 
 ## 环境要求
@@ -89,18 +74,6 @@ You've reached your trial request limit.
 - 网络连接
 - 系统环境变量中已添加 Python
 - Google Chrome浏览器
-
-## 功能特点
-
-- 🔄 一键重置功能
-- 🎯 修改机器 ID
-- 🔒 支持设置配置文件只读模式
-- 💾 配置文件备份和还原
-- 🌓 支持浅色/深色主题
-- 💻 跨平台支持 (Windows, macOS, Linux)
-- 🎨 简洁美观的界面
-- 🔍 自动检测 Python 环境
-- 📦 自动安装所需依赖
 
 ## 安装使用
 
@@ -167,43 +140,11 @@ You've reached your trial request limit.
 ### 💻 System Support
 
 <div align="center">
-<table>
-<tr>
-<td>
 
 **Windows** ✅
-- x64 (64-bit)
-- x86 (32-bit)
-
-</td>
-<td>
-
-**macOS** ✅
-- Intel (x64)
-- Apple Silicon (M1/M2)
-
-</td>
-<td>
-
-**Linux** ✅
-- x64 (64-bit)
-- x86 (32-bit)
-- ARM64
-
-</td>
-</tr>
-</table>
+**macOS**   ✅
+**Linux**   ✅
 </div>
-
-## Features
-
-- 🔄 One-click reset function
-- 🎯 Modify machine IDs
-- 🔒 Set configuration file to read-only mode
-- 💾 Configuration backup and restore
-- 🌓 Support light/dark mode
-- 💻 Cross-platform support (Windows, macOS, Linux)
-- 🎨 Clean and beautiful interface
 
 ## Installation
 
