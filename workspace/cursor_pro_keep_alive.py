@@ -27,6 +27,7 @@ LOGIN_URL = "https://authenticator.cursor.sh"
 SIGN_UP_URL = "https://authenticator.cursor.sh/sign-up"
 SETTINGS_URL = "https://www.cursor.com/settings"
 MAIL_URL = "https://mail.cx/zh/"
+TOTAL_USAGE = 0
 
 def handle_turnstile(tab):
     try:
@@ -62,41 +63,56 @@ def handle_turnstile(tab):
 
 
 def get_cursor_session_token(tab, max_attempts=3, retry_interval=2):
-    """
-    获取Cursor会话token，带有重试机制
-    :param tab: 浏览器标签页
-    :param max_attempts: 最大尝试次数
-    :param retry_interval: 重试间隔(秒)
-    :return: session token 或 None
-    """
-    logging.info("开始获取cookie")
-    attempts = 0
+    try:
 
-    while attempts < max_attempts:
-        try:
-            cookies = tab.cookies()
-            for cookie in cookies:
-                if cookie.get("name") == "WorkosCursorSessionToken":
-                    return cookie["value"].split("%3A%3A")[1]
+        tab.get(SETTINGS_URL)
+        time.sleep(2)
 
-            attempts += 1
-            if attempts < max_attempts:
-                print(
-                    f"第 {attempts} 次尝试未获取到CursorSessionToken，{retry_interval}秒后重试..."
-                )
-                time.sleep(retry_interval)
-            else:
-                print(f"已达到最大尝试次数({max_attempts})，获取CursorSessionToken失败")
+        usage_selector = (
+            "css:div.col-span-2 > div > div > div > div > "
+            "div:nth-child(1) > div.flex.items-center.justify-between.gap-2 > "
+            "span.font-mono.text-sm\\/\\[0\\.875rem\\]"
+        )
+        usage_ele = tab.ele(usage_selector)
+        total_usage = "null"
+        if usage_ele:
+            total_usage = usage_ele.text.split("/")[-1].strip()
+            TOTAL_USAGE  = total_usage
+            logging.info(f"total_usage: {total_usage}")
 
-        except Exception as e:
-            print(f"获取cookie失败: {str(e)}")
-            attempts += 1
-            if attempts < max_attempts:
-                print(f"将在 {retry_interval} 秒后重试...")
-                time.sleep(retry_interval)
 
-    return None
+        logging.info("get_cookie")
+        attempts = 0
 
+        while attempts < max_attempts:
+            try:
+                cookies = tab.cookies()
+                for cookie in cookies:
+                    if cookie.get("name") == "WorkosCursorSessionToken":
+                        
+                        return cookie["value"].split("%3A%3A")[1]
+
+                attempts += 1
+                if attempts < max_attempts:
+                    logging.warning(
+                        f"第 {attempts} 次尝试未获取到CursorSessionToken，{retry_interval}秒后重试..."
+                    )
+                    time.sleep(retry_interval)
+                else:
+                    logging.error(f"已达到最大尝试次数({max_attempts})，获取CursorSessionToken失败")
+
+            except Exception as e:
+                logging.info(f"获取cookie失败: {str(e)}")
+                attempts += 1
+                if attempts < max_attempts:
+                    logging.info(f"将在 {retry_interval} 秒后重试...")
+                    time.sleep(retry_interval)
+
+        return False
+
+    except Exception as e:
+        logging.warning(f"获取CursorSessionToken失败: {str(e)}")
+        return False
 
 def update_cursor_auth(email=None, access_token=None, refresh_token=None):
     """
@@ -108,21 +124,20 @@ def update_cursor_auth(email=None, access_token=None, refresh_token=None):
 
 def get_temp_email(tab):
     """获取临时邮箱地址"""
-    max_retries = 15  # 增加重试次数以应对页面刷新
+    max_retries = 15
     last_email = None
-    stable_count = 0  # 用于记录邮箱地址保持稳定的次数
+    stable_count = 0
     
     print("等待邮箱页面加载...")
     for i in range(max_retries):
         try:
-            # 直接获取带有特定 class 和 disabled 属性的输入框
             email_input = tab.ele("css:input.bg-gray-200[disabled]", timeout=3)
             if email_input:
                 current_email = email_input.attr('value')
                 if current_email and '@' in current_email:
                     if current_email == last_email:
                         stable_count += 1
-                        if stable_count >= 2:  # 连续两次获取到相同的邮箱地址
+                        if stable_count >= 2:
                             logging.info(f"邮箱地址已稳定: {current_email}")
                             return current_email
                     else:
@@ -144,7 +159,7 @@ def get_temp_email(tab):
 def sign_up_account(browser, tab, account_info):
     """注册账号"""
     logging.info("开始注册...")
-    tab.get(SIGN_UP_URL)  # 使用常量 SIGN_UP_URL
+    tab.get(SIGN_UP_URL)
 
     try:
         if tab.ele("@name=first_name"):
@@ -288,9 +303,24 @@ class EmailGenerator:
         return {
             "email": self.email,
             "password": self.default_password,
-            "first_name": self.default_first_name.capitalize(),  # 首字母大写
-            "last_name": self.default_last_name.capitalize(),    # 首字母大写
+            "first_name": self.default_first_name.capitalize(),
+            "last_name": self.default_last_name.capitalize(),
         }
+
+    def _save_account_info(self, token, total_usage):
+        try:
+            file_path = os.path.join(os.getcwd(), 'cursor_accounts.txt')
+            with open(file_path, 'a', encoding='utf-8') as f:
+                f.write(f"\n{'='*50}\n")
+                f.write(f"Email: {self.email}\n")
+                f.write(f"Password: {self.default_password}\n")
+                f.write(f"Token: {token}\n")
+                f.write(f"Usage Limit: {total_usage}\n")
+                f.write(f"{'='*50}\n")
+            return True
+        except Exception as e:
+            logging.error(f"保存账号信息失败: {str(e)}")
+            return False
 
 def cleanup_and_exit(browser_manager=None, exit_code=0):
     """Clean up resources and exit program"""
@@ -316,6 +346,8 @@ def cleanup_and_exit(browser_manager=None, exit_code=0):
         logging.error(f"Error during cleanup: {e}")
         sys.exit(1)
 
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--extension-path', help='插件目录路径')
@@ -325,26 +357,7 @@ def main():
     try:
         ExitCursor()  # 在调试时可以注释掉
         
-        # 获取脚本所在目录
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        default_extension_path = os.path.join(script_dir, "turnstilePatch")
-        
-        # 使用命令行参数或默认路径
-        extension_path = args.extension_path or default_extension_path
-        
-        if os.path.exists(extension_path):
-            required_files = ['manifest.json', 'script.js']
-            missing_files = [f for f in required_files 
-                           if not os.path.exists(os.path.join(extension_path, f))]
-            if missing_files:
-                print(f"警告: 插件目录缺少文件: {', '.join(missing_files)}")
-            else:
-                print(f"使用插件目录: {extension_path}")
-        else:
-            print(f"插件目录不存在: {extension_path}")
-            extension_path = None
-        
-        browser_manager = BrowserManager(extension_path=extension_path)
+        browser_manager = BrowserManager()
         browser = browser_manager.init_browser()
 
         # 打开临时邮箱标签页
@@ -376,6 +389,7 @@ def main():
             token = get_cursor_session_token(signup_tab)
             if token:
                 logging.info(f"注册成功! Token: {token}")
+                email_generator._save_account_info(token, TOTAL_USAGE)
                 update_cursor_auth(
                     email=account_info["email"], access_token=token, refresh_token=token
                 )

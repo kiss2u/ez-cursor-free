@@ -8,3 +8,4 @@ pnpm-lock.yaml
 /.idea
 /workspace/__pycache__
 /resources/workspace/__pycache__
+cursor_accounts.txt

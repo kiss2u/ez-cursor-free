@@ -1,7 +1,7 @@
 from DrissionPage.common import Keys
 import time
 import re
-import logging
+from logger import logging
 
 
 class EmailVerificationHandler:

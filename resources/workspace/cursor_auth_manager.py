@@ -1,5 +1,7 @@
 import sqlite3
 import os
+import sys
+from logger import logging
 
 
 class CursorAuthManager:
@@ -22,65 +24,78 @@ class CursorAuthManager:
                     "~/.config/Cursor/User/globalStorage/state.vscdb"
                 )
         else:
-            print("Unknown operating system.")
+            logging.warning("Unknown operating system.")
 
-        print(f"Database path is: {self.db_path}")
+        logging.info(f"Database path is: {self.db_path}")
             
 
     def update_auth(self, email=None, access_token=None, refresh_token=None):
-        """
-        更新Cursor的认证信息
-        :param email: 新的邮箱地址
-        :param access_token: 新的访问令牌
-        :param refresh_token: 新的刷新令牌
-        :return: bool 是否成功更新
-        """
-        updates = []
-        # 登录状态
-        updates.append(("cursorAuth/cachedSignUpType", "Auth_0"))
-
-        if email is not None:
-            updates.append(("cursorAuth/cachedEmail", email))
-        if access_token is not None:
-            updates.append(("cursorAuth/accessToken", access_token))
-        if refresh_token is not None:
-            updates.append(("cursorAuth/refreshToken", refresh_token))
-
-        if not updates:
-            print("没有提供任何要更新的值")
-            return False
-
         conn = None
         try:
+            db_dir = os.path.dirname(self.db_path)
+            if not os.path.exists(db_dir):
+                os.makedirs(db_dir, mode=0o755, exist_ok=True)
+            
+            if not os.path.exists(self.db_path):
+                conn = sqlite3.connect(self.db_path)
+                cursor = conn.cursor()
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS ItemTable (
+                        key TEXT PRIMARY KEY,
+                        value TEXT
+                    )
+                ''')
+                conn.commit()
+                if sys.platform != "win32":
+                    os.chmod(self.db_path, 0o644)
+                conn.close()
+
             conn = sqlite3.connect(self.db_path)
+            logging.info('auth.connected_to_database')
             cursor = conn.cursor()
+            
+            conn.execute("PRAGMA busy_timeout = 5000")
+            conn.execute("PRAGMA journal_mode = WAL")
+            conn.execute("PRAGMA synchronous = NORMAL")
+            
+            updates = []
+            if email is not None:
+                updates.append(("cursorAuth/cachedEmail", email))
+            if access_token is not None:
+                updates.append(("cursorAuth/accessToken", access_token))
+            if refresh_token is not None:
+                updates.append(("cursorAuth/refreshToken", refresh_token))
+                updates.append(("cursorAuth/cachedSignUpType", "Auth_0"))
 
-            for key, value in updates:
-
-                # 如果没有更新任何行,说明key不存在,执行插入
-                # 检查 accessToken 是否存在
-                check_query = f"SELECT COUNT(*) FROM itemTable WHERE key = ?"
-                cursor.execute(check_query, (key,))
-                if cursor.fetchone()[0] == 0:
-                    insert_query = "INSERT INTO itemTable (key, value) VALUES (?, ?)"
-                    cursor.execute(insert_query, (key, value))
-                else:
-                    update_query = "UPDATE itemTable SET value = ? WHERE key = ?"
-                    cursor.execute(update_query, (value, key))
-
-                if cursor.rowcount > 0:
-                    print(f"成功更新 {key.split('/')[-1]}")
-                else:
-                    print(f"未找到 {key.split('/')[-1]} 或值未变化")
-
-            conn.commit()
-            return True
+            cursor.execute("BEGIN TRANSACTION")
+            try:
+                for key, value in updates:
+                    cursor.execute("SELECT COUNT(*) FROM ItemTable WHERE key = ?", (key,))
+                    if cursor.fetchone()[0] == 0:
+                        cursor.execute("""
+                            INSERT INTO ItemTable (key, value) 
+                            VALUES (?, ?)
+                        """, (key, value))
+                    else:
+                        cursor.execute("""
+                            UPDATE ItemTable SET value = ?
+                            WHERE key = ?
+                        """, (value, key))
+                    logging.info(f'Updating {key.split('/')[-1]}')
+                
+                cursor.execute("COMMIT")
+                logging.info('auth.database_updated_successfully')
+                return True
+                
+            except Exception as e:
+                cursor.execute("ROLLBACK")
+                raise e
 
         except sqlite3.Error as e:
-            print("数据库错误:", str(e))
+            logging.error("database_error:", str(e))
             return False
         except Exception as e:
-            print("发生错误:", str(e))
+            logging.error("error:", str(e))
             return False
         finally:
             if conn:

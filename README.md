@@ -34,7 +34,11 @@
 
 如果没有Google Chrome，可以从[这里](https://www.google.com/intl/en_pk/chrome/)下载Google Chrome
 
+<div align="center">
+
 ![alt text](/screenshots/alert.png)
+
+</div>
 
 如果遇到这个问题，请点击[这里](https://sysin.org/blog/macos-if-crashes-when-opening/)查看解决方案
 
@@ -164,6 +168,8 @@ This project is developed based on the [gpt-cursor-auto](https://github.com/hmhm
 ## ⭐ Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=GalacticDevOps/ez-cursor-free&type=Date)](https://star-history.com/#GalacticDevOps/ez-cursor-free&Date)
+
+![Alt](https://repobeats.axiom.co/api/embed/e093d035f86c7cc57f690c634df67bcf821455df.svg "Repobeats analytics image")
 
 ## Contributors
 

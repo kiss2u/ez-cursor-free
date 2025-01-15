@@ -287,7 +287,8 @@ const startKeepAlive = async () => {
     const result = await window.electron.ipcRenderer.invoke('run-python-script')
     
     if (result.success) {
-      showMessage('重置程序已结束', 'success')
+      showMessage('已完成重置', 'success')
+      // await window.electron.ipcRenderer.invoke('open-file', 'cursor_accounts.txt')
     } else {
       showMessage(result.error || '重置程序启动失败', 'error')
     }

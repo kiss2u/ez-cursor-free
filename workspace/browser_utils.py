@@ -1,7 +1,7 @@
 from DrissionPage import ChromiumOptions, Chromium
 import sys
 import os
-import logging
+from logger import logging
 
 
 class BrowserManager:
