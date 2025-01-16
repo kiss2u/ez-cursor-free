@@ -38,6 +38,8 @@ nsis:
   allowElevation: true
   # 是否允许用户更改安装目录
   allowToChangeInstallationDirectory: true
+portable:
+  artifactName: ${name}-${version}-portable.${ext}
 mac:
   executableName: ez-cursor-free
   icon: build/icons/512x512.png

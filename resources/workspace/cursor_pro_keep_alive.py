@@ -1,28 +1,27 @@
 import os
 import sys
-import argparse
 import psutil
+import subprocess
 
 from exit_cursor import ExitCursor
 
-os.environ["PYTHONVERBOSE"] = "0"
-os.environ["PYINSTALLER_VERBOSE"] = "0"
+os.environ["PYTHONWARNINGS"] = "ignore"
 
 import time
 import random
-from cursor_auth_manager import CursorAuthManager
+
 import os
 from logger import logging
+from cursor_auth_manager import CursorAuthManager
 from browser_utils import BrowserManager
 from get_email_code import EmailVerificationHandler
+from _machine_ids_reset import ResetterMachineIDs
 
-# 设置默认编码
 if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 if sys.stderr.encoding != 'utf-8':
     sys.stderr.reconfigure(encoding='utf-8')
 
-# 添加固定的 URL 配置
 LOGIN_URL = "https://authenticator.cursor.sh"
 SIGN_UP_URL = "https://authenticator.cursor.sh/sign-up"
 SETTINGS_URL = "https://www.cursor.com/settings"
@@ -58,15 +57,15 @@ def handle_turnstile(tab):
 
             time.sleep(random.uniform(1, 2))
     except Exception as e:
-        print(e)
+        logging.error(e)
         return False
 
 
-def get_cursor_session_token(tab, max_attempts=3, retry_interval=2):
+def get_cursor_session_token(tab, max_attempts=5, retry_interval=3):
     try:
 
         tab.get(SETTINGS_URL)
-        time.sleep(2)
+        time.sleep(5)
 
         usage_selector = (
             "css:div.col-span-2 > div > div > div > div > "
@@ -77,11 +76,12 @@ def get_cursor_session_token(tab, max_attempts=3, retry_interval=2):
         total_usage = "null"
         if usage_ele:
             total_usage = usage_ele.text.split("/")[-1].strip()
+            global TOTAL_USAGE
             TOTAL_USAGE  = total_usage
             logging.info(f"total_usage: {total_usage}")
 
 
-        logging.info("get_cookie")
+        logging.info("get.cookie")
         attempts = 0
 
         while attempts < max_attempts:
@@ -89,46 +89,39 @@ def get_cursor_session_token(tab, max_attempts=3, retry_interval=2):
                 cookies = tab.cookies()
                 for cookie in cookies:
                     if cookie.get("name") == "WorkosCursorSessionToken":
-                        
                         return cookie["value"].split("%3A%3A")[1]
 
                 attempts += 1
                 if attempts < max_attempts:
-                    logging.warning(
-                        f"第 {attempts} 次尝试未获取到CursorSessionToken，{retry_interval}秒后重试..."
-                    )
+                    logging.warning(f"not.find.cursor_session_token, retrying in {retry_interval} seconds...")
                     time.sleep(retry_interval)
                 else:
-                    logging.error(f"已达到最大尝试次数({max_attempts})，获取CursorSessionToken失败")
+                    logging.error(f"not.find.cursor_session_token")
 
             except Exception as e:
-                logging.info(f"获取cookie失败: {str(e)}")
+                logging.info(f"get_cursor_session_token.error: {str(e)}")
                 attempts += 1
                 if attempts < max_attempts:
-                    logging.info(f"将在 {retry_interval} 秒后重试...")
+                    logging.info(f"get_cursor_session_token.error, retrying in {retry_interval} seconds...")
                     time.sleep(retry_interval)
 
         return False
 
     except Exception as e:
-        logging.warning(f"获取CursorSessionToken失败: {str(e)}")
+        logging.warning(f"get_cursor_session_token.error: {str(e)}")
         return False
 
 def update_cursor_auth(email=None, access_token=None, refresh_token=None):
-    """
-    更新Cursor的认证信息的便捷函数
-    """
     auth_manager = CursorAuthManager()
     return auth_manager.update_auth(email, access_token, refresh_token)
 
 
 def get_temp_email(tab):
-    """获取临时邮箱地址"""
     max_retries = 15
     last_email = None
     stable_count = 0
     
-    print("等待邮箱页面加载...")
+    logging.info('wait.email')
     for i in range(max_retries):
         try:
             email_input = tab.ele("css:input.bg-gray-200[disabled]", timeout=3)
@@ -138,27 +131,26 @@ def get_temp_email(tab):
                     if current_email == last_email:
                         stable_count += 1
                         if stable_count >= 2:
-                            logging.info(f"邮箱地址已稳定: {current_email}")
+                            logging.info('email.success')
                             return current_email
                     else:
                         stable_count = 0
                         last_email = current_email
-                        logging.info(f"检测到邮箱地址: {current_email}，等待稳定...")
+                        logging.info(f'current_email: {current_email}')
             
-            print(f"等待邮箱加载... ({i+1}/{max_retries})")
+            logging.info('wait.email')
             time.sleep(2)
             
         except Exception as e:
-            logging.warning(f"获取邮箱时出错: {str(e)}")
+            logging.warning('get_temp_email.error')
             time.sleep(2)
-            stable_count = 0  # 发生错误时重置稳定计数
+            stable_count = 0
     
-    raise ValueError("无法获取稳定的临时邮箱地址")
+    raise ValueError('not.find.email')
 
 
 def sign_up_account(browser, tab, account_info):
-    """注册账号"""
-    logging.info("开始注册...")
+    logging.info('sign_up_account')
     tab.get(SIGN_UP_URL)
 
     try:
@@ -175,7 +167,7 @@ def sign_up_account(browser, tab, account_info):
             tab.actions.click("@type=submit")
 
     except Exception as e:
-        logging.warning("打开注册页面失败")
+        logging.warning('name.error')
         return False
 
     handle_turnstile(tab)
@@ -186,20 +178,19 @@ def sign_up_account(browser, tab, account_info):
             time.sleep(random.uniform(1, 3))
 
             tab.ele("@type=submit").click()
-            logging.info("请稍等...")
+            logging.info('password.success')
 
     except Exception as e:
-        logging.warning("执行失败")
+        logging.warning('password.error')
         return False
 
     time.sleep(random.uniform(1, 3))
     if tab.ele("This email is not available."):
-        logging.warning("执行失败")
+        logging.warning('email.not_available')
         return False
 
     handle_turnstile(tab)
 
-    # 创建 EmailVerificationHandler 实例
     email_handler = EmailVerificationHandler(browser, MAIL_URL)
 
     while True:
@@ -218,13 +209,12 @@ def sign_up_account(browser, tab, account_info):
                     i += 1
                 break
         except Exception as e:
-            print(e)
+            logging.error(e)
 
     handle_turnstile(tab)
     return True
 
 def handle_verification_code(browser, tab, account_info):
-    """处理验证码"""
     email_handler = EmailVerificationHandler(browser, MAIL_URL)
     
     max_wait = 30
@@ -233,7 +223,7 @@ def handle_verification_code(browser, tab, account_info):
     while time.time() - start_time < max_wait:
         try:
             if tab.ele("Account Settings"):
-                logging.info("注册成功")
+                logging.info('email.success')
                 return True
                 
             if tab.ele("@data-index=0"):
@@ -242,7 +232,7 @@ def handle_verification_code(browser, tab, account_info):
                     logging.error("无法获取验证码")
                     return False
 
-                logging.info(f"输入验证码: {code}")
+                logging.info(f'code: {code}')
                 for i, digit in enumerate(code):
                     tab.ele(f"@data-index={i}").input(digit)
                     time.sleep(random.uniform(0.1, 0.3))
@@ -251,15 +241,14 @@ def handle_verification_code(browser, tab, account_info):
             time.sleep(2)
             
         except Exception as e:
-            logging.error(f"处理验证码时出错: {str(e)}")
+            logging.error(f"handle_verification_code.error: {str(e)}")
             time.sleep(2)
     
-    logging.error("验证码处理超时")
+    logging.error('email.timeout')
     return False
 
 
 class EmailGenerator:
-    # 常用英文名列表
     FIRST_NAMES = [
         "james", "john", "robert", "michael", "william", "david", "richard", "joseph",
         "thomas", "charles", "christopher", "daniel", "matthew", "anthony", "donald",
@@ -267,7 +256,6 @@ class EmailGenerator:
         "harper", "evelyn", "abigail", "emily", "elizabeth", "sofia", "madison"
     ]
     
-    # 常用英文姓氏
     LAST_NAMES = [
         "smith", "johnson", "williams", "brown", "jones", "garcia", "miller", "davis",
         "rodriguez", "martinez", "hernandez", "lopez", "gonzalez", "wilson", "anderson",
@@ -287,19 +275,16 @@ class EmailGenerator:
         last_name=None,
     ):
         self.default_password = password
-        # 随机选择名和姓
         self.default_first_name = first_name or random.choice(self.FIRST_NAMES)
         self.default_last_name = last_name or random.choice(self.LAST_NAMES)
         self.email = None
 
     def set_email(self, email):
-        """设置邮箱地址"""
         self.email = email
 
     def get_account_info(self):
-        """获取完整的账号信息"""
         if not self.email:
-            raise ValueError("邮箱地址未设置")
+            raise ValueError("Email address not set")
         return {
             "email": self.email,
             "password": self.default_password,
@@ -319,18 +304,16 @@ class EmailGenerator:
                 f.write(f"{'='*50}\n")
             return True
         except Exception as e:
-            logging.error(f"保存账号信息失败: {str(e)}")
+            logging.error(f"save_account_info.error: {str(e)}")
             return False
 
 def cleanup_and_exit(browser_manager=None, exit_code=0):
     """Clean up resources and exit program"""
     try:
-        # Browser cleanup
         if browser_manager:
-            logging.info("Closing browser...")
+            logging.info("browser.quit")
             browser_manager.quit()
         
-        # Kill any remaining python processes
         current_process = psutil.Process()
         children = current_process.children(recursive=True)
         for child in children:
@@ -339,70 +322,73 @@ def cleanup_and_exit(browser_manager=None, exit_code=0):
             except:
                 pass
                 
-        logging.info("Cleanup completed")
+        logging.info("exit.success")
         sys.exit(exit_code)
         
     except Exception as e:
-        logging.error(f"Error during cleanup: {e}")
+        logging.error(f"cleanup.exit.error: {str(e)}")
         sys.exit(1)
 
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--extension-path', help='插件目录路径')
-    args = parser.parse_args()
-
     browser_manager = None
     try:
-        ExitCursor()  # 在调试时可以注释掉
-        
+        success, path_cursor = ExitCursor()  # 在调试时可以注释掉
+        logging.info(f'exit.cursor.success: {success}, path.cursor: {path_cursor}')
+
         browser_manager = BrowserManager()
         browser = browser_manager.init_browser()
 
-        # 打开临时邮箱标签页
         mail_tab = browser.new_tab(MAIL_URL)
         browser.activate_tab(mail_tab)
-        time.sleep(5)  # 给页面初始加载一些时间
+        time.sleep(5)
         
-        # 获取临时邮箱地址
         email_js = get_temp_email(mail_tab)
 
-        # 初始化邮箱验证处理器
-        email_handler = EmailVerificationHandler(browser, MAIL_URL)
-
-        # 生成账号信息
         email_generator = EmailGenerator()
         email_generator.set_email(email_js)
         account_info = email_generator.get_account_info()
 
-        # 打开注册标签页
         signup_tab = browser.new_tab(SIGN_UP_URL)
         browser.activate_tab(signup_tab)
         time.sleep(2)
 
-        # 重置 turnstile
         signup_tab.run_js("try { turnstile.reset() } catch(e) { }")
 
-        # 开始注册流程
         if sign_up_account(browser, signup_tab, account_info):
             token = get_cursor_session_token(signup_tab)
+            logging.info(f'account.token: {token}')
             if token:
-                logging.info(f"注册成功! Token: {token}")
                 email_generator._save_account_info(token, TOTAL_USAGE)
                 update_cursor_auth(
                     email=account_info["email"], access_token=token, refresh_token=token
                 )
+                logging.info('start.machine.ids.reset')
+                resetter = ResetterMachineIDs()
+                resetter.reset_machine_ids()
+                if path_cursor:
+                    try:
+                        logging.info(f"restart.cursor.path {path_cursor}")
+                        if os.name == 'nt':
+                            startupinfo = subprocess.STARTUPINFO()
+                            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                            subprocess.Popen([path_cursor], startupinfo=startupinfo, close_fds=True)
+                        else:
+                            subprocess.Popen(['open', path_cursor])
+                        logging.info('restart.cursor.success')
+                    except Exception as e:
+                        logging.error(f"restart.cursor.error: {str(e)}")
             else:
-                logging.error("获取token失败")
+                logging.error("get.cursor.session.token.failed")
         else:
-            logging.error("注册失败")
+            logging.error("register.failed")
 
-        logging.info("执行完毕")
+        logging.info("register.finished")
         cleanup_and_exit(browser_manager, 0)
 
     except Exception as e:
-        logging.error(f"程序执行出错: {str(e)}")
+        logging.error(f"main.error: {str(e)}")
         import traceback
         logging.error(traceback.format_exc())
         cleanup_and_exit(browser_manager, 1)

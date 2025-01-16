@@ -10,11 +10,11 @@ class EmailVerificationHandler:
         self.mail_url = mail_url
 
     def get_verification_code(self, email):
-        username = email.split("@")[0]
+        logging.info(email)
         code = None
 
         try:
-            logging.info("正在处理...")
+            logging.info("processing.email")
             tab_mail = self.browser.new_tab(self.mail_url)
             self.browser.activate_tab(tab_mail)
 
@@ -25,7 +25,7 @@ class EmailVerificationHandler:
             tab_mail.close()
 
         except Exception as e:
-            logging.error(f"获取验证码失败: {str(e)}")
+            logging.error(f"error.getting.email.code: {str(e)}")
 
         return code
 
@@ -40,25 +40,25 @@ class EmailVerificationHandler:
                 if email_row:
                     subject_cell = email_row.ele("css:td:nth-child(2)")
                     if subject_cell and "Verify your email address" in subject_cell.text:
-                        logging.info("找到验证邮件，正在打开...")
+                        logging.info('email.found')
                         email_row.click()
                         time.sleep(2)
                         break
 
-                logging.info("等待验证邮件...")
+                logging.info("waiting.email.load")
                 time.sleep(2)
                 tab.refresh()
                 time.sleep(3)
                 retry_count += 1
             
             except Exception as e:
-                logging.error(f"查找邮件时出错: {str(e)}")
+                logging.error(f"error.getting.email: {str(e)}")
                 time.sleep(2)
                 retry_count += 1
 
         if retry_count >= max_retries:
-            logging.error("无法找到验证邮件，结束任务。")
-            raise Exception("无法找到验证邮件。")
+            logging.error("email.not.found")
+            raise Exception("Email not found")
 
         max_retries = 10
         for attempt in range(max_retries):
@@ -70,17 +70,17 @@ class EmailVerificationHandler:
                         matches = re.findall(r'\b\d{6}\b', content)
                         for match in matches:
                             if "verification code" in content.lower() or "verify" in content.lower():
-                                logging.info(f"从内容中提取到验证码: {match}")
+                                logging.info(f"code.found: {match}")
                                 return match
 
-                logging.info(f"等待验证码加载... ({attempt + 1}/{max_retries})")
+                logging.info("waiting.code.load")
                 time.sleep(2)
 
             except Exception as e:
-                logging.error(f"提取验证码时出错: {str(e)}")
+                logging.error(f"error.getting.code: {str(e)}")
                 time.sleep(2)
 
-        logging.error("无法获取验证码")
+        logging.error("code.not.found")
         return None
 
     def _cleanup_mail(self, tab):

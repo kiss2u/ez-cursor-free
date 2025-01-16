@@ -264,7 +264,6 @@ const startKeepAlive = async () => {
       })
 
       secondaryBtn?.addEventListener('click', () => {
-        openGithubStar()
         starMessage.remove()
         resolve(true)
       })

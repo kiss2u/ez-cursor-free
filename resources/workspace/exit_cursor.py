@@ -3,38 +3,38 @@ from logger import logging
 import time
 
 def ExitCursor(timeout=5):
-    """
-    温和地关闭 Cursor 进程
-    
-    Args:
-        timeout (int): 等待进程自然终止的超时时间（秒）
-    Returns:
-        bool: 是否成功关闭所有进程
-    """
     try:
-        logging.info("开始退出Cursor...")
+        logging.info("exit.cursor")
         cursor_processes = []
-        # 收集所有 Cursor 进程
+        path_cursor = ''
         for proc in psutil.process_iter(['pid', 'name']):
             try:
                 if proc.info['name'].lower() in ['cursor.exe', 'cursor']:
+                    try:
+                        if not path_cursor:
+                            raw_path = proc.exe()
+                            if raw_path and '.app' in raw_path:
+                                path_cursor = raw_path[:raw_path.find('.app') + 4]
+                            else:
+                                path_cursor = raw_path
+                            logging.info(f'found.cursor {path_cursor}')
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        logging.warning('exit.cursor.path.error')
                     cursor_processes.append(proc)
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
 
         if not cursor_processes:
-            logging.info("未发现运行中的 Cursor 进程")
-            return True
+            logging.info("not.found.cursor")
+            return True, path_cursor
 
-        # 温和地请求进程终止
         for proc in cursor_processes:
             try:
                 if proc.is_running():
-                    proc.terminate()  # 发送终止信号
+                    proc.terminate()
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
 
-        # 等待进程自然终止
         start_time = time.time()
         while time.time() - start_time < timeout:
             still_running = []
@@ -46,23 +46,23 @@ def ExitCursor(timeout=5):
                     continue
             
             if not still_running:
-                logging.info("所有 Cursor 进程已正常关闭")
-                return True
+                logging.info("exit.cursor.success")
+                return True, path_cursor
                 
-            # 等待一小段时间再检查
             time.sleep(0.5)
             
-        # 如果超时后仍有进程在运行
         if still_running:
             process_list = ", ".join([str(p.pid) for p in still_running])
-            logging.warning(f"以下进程未能在规定时间内关闭: {process_list}")
-            return False
+            logging.warning(f'exit.cursor.timeout {process_list}')
+            return False, path_cursor
             
-        return True
+        return True, path_cursor
 
     except Exception as e:
-        logging.error(f"关闭 Cursor 进程时发生错误: {str(e)}")
-        return False
+        logging.error(f'exit.cursor.error {str(e)}')
+        return False, ''
 
 if __name__ == "__main__":
-    ExitCursor()
+    success, path = ExitCursor()
+    if path:
+        logging.info(f'exit.cursor.path {path}')

@@ -5,16 +5,15 @@ from logger import logging
 
 
 class CursorAuthManager:
-    """Cursor认证信息管理器"""
-
     def __init__(self):
-        # 判断操作系统
         if os.name == "nt":  # Windows
+            appdata = os.getenv("APPDATA")
+            if appdata is None:
+                raise EnvironmentError("not.set.environment.variable.APPDATA")
             self.db_path = os.path.join(
-                os.getenv("APPDATA"), "Cursor", "User", "globalStorage", "state.vscdb"
+                appdata, "Cursor", "User", "globalStorage", "state.vscdb"
             )
         elif os.name == 'posix':  # Linux or macOS
-            # Further check for macOS
             if os.uname().sysname == 'Darwin':
                 self.db_path = os.path.expanduser(
                     "~/Library/Application Support/Cursor/User/globalStorage/state.vscdb"
@@ -24,9 +23,9 @@ class CursorAuthManager:
                     "~/.config/Cursor/User/globalStorage/state.vscdb"
                 )
         else:
-            logging.warning("Unknown operating system.")
+            raise NotImplementedError('os.not.supported: {sys.platform}')
 
-        logging.info(f"Database path is: {self.db_path}")
+        logging.info(f"auth.db.path: {self.db_path}")
             
 
     def update_auth(self, email=None, access_token=None, refresh_token=None):
@@ -51,7 +50,7 @@ class CursorAuthManager:
                 conn.close()
 
             conn = sqlite3.connect(self.db_path)
-            logging.info('auth.connected_to_database')
+            logging.info('auth.connected.database')
             cursor = conn.cursor()
             
             conn.execute("PRAGMA busy_timeout = 5000")
@@ -81,10 +80,10 @@ class CursorAuthManager:
                             UPDATE ItemTable SET value = ?
                             WHERE key = ?
                         """, (value, key))
-                    logging.info(f'Updating {key.split('/')[-1]}')
+                    logging.info(f'auth.updating {key.split('/')[-1]}')
                 
                 cursor.execute("COMMIT")
-                logging.info('auth.database_updated_successfully')
+                logging.info('auth.database.updated.successfully')
                 return True
                 
             except Exception as e:
@@ -92,7 +91,7 @@ class CursorAuthManager:
                 raise e
 
         except sqlite3.Error as e:
-            logging.error("database_error:", str(e))
+            logging.error("database.error:", str(e))
             return False
         except Exception as e:
             logging.error("error:", str(e))
