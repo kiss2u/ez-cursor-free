@@ -79,4 +79,5 @@ window.electron.ipcRenderer.invoke('check-file-permission').then(result => {
 如果你有好的想法或者发现问题，欢迎通过以下方式参与贡献：
 
 提交 [Issues](https://github.com/GalacticDevOps/ez-cursor-free/issues)
+
 提交 [Pull Requests](https://github.com/GalacticDevOps/ez-cursor-free/pulls) 来修复问题或添加新功能。

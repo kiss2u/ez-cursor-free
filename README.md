@@ -1,14 +1,10 @@
 # 🚀 Ez2 Use Cursor Free Tools
 
-> 一个能够帮你自动注册、刷新token、修改机器ID的工具
-
 ⚠️ This tool is only available to those who are unable to pay but urgently need to use it.
-
-如果本项目对你有帮助，请给本项目点一个star⭐️，感谢您的支持！
 
 <div align="center">
 
-<a title="AGPLv3" target="_blank" href="https://www.gnu.org/licenses/agpl-3.0.txt"><img src="http://img.shields.io/badge/license-AGPLv3-orange.svg?style=flat-square"></a>
+<a title="MIT" target="_blank" href="https://github.com/GalacticDevOps/ez-cursor-free/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-orange.svg?style=flat-square"></a>
 <a title="Releases" target="_blank" href="https://github.com/GalacticDevOps/ez-cursor-free/releases"><img src="https://img.shields.io/github/release/GalacticDevOps/ez-cursor-free.svg?style=flat-square&color=9CF"></a>
 <a title="Downloads" target="_blank" href="https://github.com/GalacticDevOps/ez-cursor-free/releases"><img src="https://img.shields.io/github/downloads/GalacticDevOps/ez-cursor-free/total.svg?style=flat-square&color=blueviolet"></a>
 
@@ -16,7 +12,7 @@
 [![Build Release](https://github.com/GalacticDevOps/ez-cursor-free/actions/workflows/release.yml/badge.svg)](https://github.com/GalacticDevOps/ez-cursor-free/actions/workflows/release.yml)
 [![Issues](https://img.shields.io/github/issues/GalacticDevOps/ez-cursor-free)](https://github.com/GalacticDevOps/ez-cursor-free/issues)
 
-[🌏 中文](#-chinese) | [🌟 English](#-english)
+[🌏 中文](README_CN.md) | [🌟 English](README.md)
 
 <img src="https://ai-cursor.com/wp-content/uploads/2024/09/logo-cursor-ai-png.webp" alt="Cursor Logo" width="120"/>
 
@@ -30,101 +26,100 @@
 
 </div>
 
-⚠️ 项目运行需要python环境，请确保安装python3.8及以上版本
 
-如果没有Google Chrome，可以从[这里](https://www.google.com/intl/en_pk/chrome/)下载Google Chrome
+> ⚠️ **IMPORTANT NOTICE**
+> 
+> This tool currently supports:
+> - ✅ Latest v0.45.x versions and below
+> - 🎯 [Cursor AI IDE Changelog](https://www.cursor.com/changelog)
+
+## Latest Version
+
+- Mac https://downloader.cursor.sh/mac/installer/universal  
+- Windows x64 https://downloader.cursor.sh/windows/nsis/x64  
+- Linux x64 https://downloader.cursor.sh/linux/appImage/x64  
+
+> 💾 **Download Cursor Hisotry(v0.44.x and below) Version**
+> https://downloader-cursor.deno.dev/history/
+
+## Download Links History
+
+| Version | Date | Mac Installer | Windows X64 Installer | Linux X64 Installer |
+| --- | --- | --- | --- | --- |
+| 0.45.9 | 2025-02-04 | [Link](https://downloader.cursor.sh/builds/250202tgstl42dt/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/250202tgstl42dt/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/250202tgstl42dt/linux/appImage/x64) |
+| 0.45.8 | 2025-02-02 | [Link](https://downloader.cursor.sh/builds/250201b44xw1x2k/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/250201b44xw1x2k/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/250201b44xw1x2k/linux/appImage/x64) |
+| 0.45.7 | 2025-01-31 | [Link](https://downloader.cursor.sh/builds/250130nr6eorv84/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/250130nr6eorv84/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/250130nr6eorv84/linux/appImage/x64) |
+| 0.45.5 | 2025-01-29 | [Link](https://downloader.cursor.sh/builds/250128loaeyulq8/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/250128loaeyulq8/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/250128loaeyulq8/linux/appImage/x64) |
+| 0.45.4 | 2025-01-27 | [Link](https://downloader.cursor.sh/builds/250126vgr3vztvj/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/250126vgr3vztvj/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/250126vgr3vztvj/linux/appImage/x64) |
+| 0.45.3 | 2025-01-25 | [Link](https://downloader.cursor.sh/builds/250124b0rcj0qql/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/250124b0rcj0qql/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/250124b0rcj0qql/linux/appImage/x64) |
+| 0.45.2 | 2025-01-24 | [Link](https://downloader.cursor.sh/builds/250123mhituoa6o/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/250123mhituoa6o/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/250123mhituoa6o/linux/appImage/x64) |
+| 0.44.11 | 2025-01-04 | [Link](https://downloader.cursor.sh/builds/250103fqxdt5u9z/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/250103fqxdt5u9z/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/250103fqxdt5u9z/linux/appImage/x64) |
+| 0.44.9 | 2024-12-28 | [Link](https://downloader.cursor.sh/builds/2412268nc6pfzgo/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/2412268nc6pfzgo/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/2412268nc6pfzgo/linux/appImage/x64) |
+| 0.44.8 | 2024-12-23 | [Link](https://downloader.cursor.sh/builds/241222ooktny8mh/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/241222ooktny8mh/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/241222ooktny8mh/linux/appImage/x64) |
+| 0.43.6 | 2024-12-06 | [Link](https://downloader.cursor.sh/builds/241206z7j6me2e2/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/241206z7j6me2e2/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/241206z7j6me2e2/linux/appImage/x64) |
+| 0.42.5 | - | [Link](https://downloader.cursor.sh/builds/24111460bf2loz1/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/24111460bf2loz1/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/24111460bf2loz1/linux/appImage/x64) |
+| 0.42.4 | - | [Link](https://downloader.cursor.sh/builds/230313mzl4w4u92/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/230313mzl4w4u92/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/230313mzl4w4u92/linux/appImage/x64) |
+| 0.42.3 | - | [Link](https://downloader.cursor.sh/builds/230313mzl4w4u92/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/230313mzl4w4u92/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/230313mzl4w4u92/linux/appImage/x64) |
+
+
+<details>
+<summary><b>🔒 Disable Auto Update</b></summary>
+
+> To prevent Cursor from automatically updating to unsupported new versions, you can choose to disable the auto-update feature.
+
+### Method 1: Click the "Disable Auto Update" Button (Recommended)
+
+![alt text](/screenshots/disable_update.png)
+
+### Method 2: Manual Disable - Edit the Configuration File
+
+**Windows:**
+1. Close all Cursor processes
+2. Delete directory: `%LOCALAPPDATA%\cursor-updater`
+3. Create a file with the same name (without extension) in the same location
+
+**macOS:**
+```bash
+# Close Cursor
+pkill -f "Cursor"
+# Remove update directory and create blocking file
+rm -rf ~/Library/Application\ Support/cursor-updater
+touch ~/Library/Application\ Support/cursor-updater
+```
+
+**Linux:**
+```bash
+# Close Cursor
+pkill -f "Cursor"
+# Remove update directory and create blocking file
+rm -rf ~/.config/cursor-updater
+touch ~/.config/cursor-updater
+```
+
+> ⚠️ **Note:** After disabling automatic updates, you will need to manually download and install new versions. It is recommended to confirm that the new version is compatible before updating.
+
+
+</details>
+
+> ⚠️ **NOTICE**
+> The project requires a python environment to run. Please ensure that python3.8 and above are installed.
+> The program requires Google Chrome browser, please make sure to install Google Chrome browser
+
+If you don’t have Google Chrome, you can download Google Chrome from [here](https://www.google.com/intl/en_pk/chrome/), Or you can choose to use another browser. For details on how to use it, see [here](https://github.com/GalacticDevOps/ez-cursor-free/issues/10)
 
 <div align="center">
 
 ![alt text](/screenshots/alert.png)
 
+If you encounter this problem, please click [here](https://sysin.org/blog/macos-if-crashes-when-opening/) to view the solution
+
 </div>
-
-如果遇到这个问题，请点击[这里](https://sysin.org/blog/macos-if-crashes-when-opening/)查看解决方案
-
-# 🌏 Chinese
-
-### 📝 问题描述
-
-> 当看到以下提示时重置Cursor试用期：
-
-```text
-Too many free trial accounts used on this machine.
-Please upgrade to pro. We have this limit in place
-to prevent abuse. Please let us know if you believe
-this is a mistake.
-```
-
-> 如果看到以下提示：
-```text
-You've reached your trial request limit.
-```
-> 这表示在VIP免费试用期间已达到使用次数限制。解决方案：
-> - 注销当前账号并重新注册
-> - 更换新的账号
-
-### 💻 系统支持
-
-<div align="center">
-
-**Windows** ✅
-**macOS**   ✅
-**Linux**   ✅
-</div>
-
-## 环境要求
-
-- Python 3.8 或更高版本
-- 网络连接
-- 系统环境变量中已添加 Python
-- Google Chrome浏览器
-
-## 安装使用
-
-1. 确保已安装 Python 3.8+ 并添加到环境变量
-2. 从 [Releases](https://github.com/GalacticDevOps/ez-cursor-free/releases) 页面下载最新版本
-3. 安装并运行应用
-4. 首次运行时会自动检查环境并安装依赖
-   - Windows用户请使用管理员权限运行
-   - Linux/Mac用户可能需要使用 sudo 运行 pip 命令
-5. 根据需要使用相应功能
-6. 重启 Cursor 以应用更改
-
-### 环境配置
-
-如果遇到 Python 环境相关问题：
-
-1. 访问 [Python 官网](https://www.python.org/downloads/) 下载并安装 Python 3.8+
-2. 安装时勾选"Add Python to PATH"选项
-3. 重启应用以重新检测环境
-4. 如果依赖安装失败，可以手动执行：
-   ```bash
-   # Windows
-   pip install -r "%APPDATA%\ez-cursor-free\resources\workspace\requirements.txt"
-   
-   # Mac
-   pip3 install -r "~/Library/Application Support/ez-cursor-free/resources/workspace/requirements.txt"
-   
-   # Linux
-   pip3 install -r ~/.config/ez-cursor-free/resources/workspace/requirements.txt
-   ```
-
-### 📦 手动安装
-
-> 从 [releases](https://github.com/GalacticDevOps/ez-cursor-free/releases/latest) 页面下载适合您系统的文件
-
-## 注意事项
-
-- 使用功能前请确保已关闭 Cursor
-- 首次使用时请确保网络连接正常以安装依赖
-- 建议修改后将配置文件设为只读模式
-- 如遇问题请查看错误提示或提交 Issue
-
-# 🌟 English
 
 ### 📝 Description
 
-> Resets Cursor's free trial limitation when you see:
+> When you encounter any of these messages:
+
+#### Issue 1: Trial Account Limit <p align="right"><a href="#issue1"><img src="https://img.shields.io/badge/Move%20to%20Solution-Blue?style=plastic" alt="Back To Top"></a></p>
 
 ```text
 Too many free trial accounts used on this machine.
@@ -133,13 +128,59 @@ to prevent abuse. Please let us know if you believe
 this is a mistake.
 ```
 
-> If you see this message:
+#### Issue 2: API Key Limitation <p align="right"><a href="#issue2"><img src="https://img.shields.io/badge/Move%20to%20Solution-green?style=plastic" alt="Back To Top"></a></p>
+
+```text
+[New Issue]
+
+Composer relies on custom models that cannot be billed to an API key.
+Please disable API keys and use a Pro or Business subscription.
+Request ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
+
+#### Issue 3: Trial Request Limit
+
+> This indicates you've reached the usage limit during the VIP free trial period:
+
 ```text
 You've reached your trial request limit.
 ```
-> This means you've reached the usage limit during the VIP free trial period. Solutions:
-> - Log out and register a new account
-> - Switch to a different account
+
+<p id="issue1"></p>
+
+### Solution - Trial Account Limit
+
+#### Solution 1: Quick Reset (Recommended)
+
+1. Close Cursor application
+2. Run the `ez-cursor-free` (see installation instructions below)
+3. Reopen Cursor to continue using
+
+#### Solution 2: Use ez-cursor-free, Click the "Auto Reset" Button
+
+![alt text](/screenshots/auto_reset.png)
+
+> Wait for the automatic reset to complete. If the waiting time is too long, it may be due to network problems. Please see solution 3.
+
+#### Solution 3: Network Optimization
+
+If the above solutions don't work, try:
+
+- Switch to low-latency nodes (Recommended regions: Japan, Singapore, US, Hong Kong)
+- Ensure network stability
+- Clear browser cache and retry
+
+<p id="issue2"></p>
+
+### Solution -  API Key Limitation
+
+#### Solution: Uninstall Cursor Completely And Reinstall (API key Issue)
+
+1. Download [HiBit Uninstaller.exe](https://hibitsoft.ir/Uninstaller.html)
+2. Uninstall Cursor app completely
+3. Re-Install Cursor app
+4. Continue to Solution 1
+
 
 ### 💻 System Support
 
@@ -155,7 +196,7 @@ You've reached your trial request limit.
 1. Download the latest release from the [Releases](https://github.com/GalacticDevOps/ez-cursor-free/releases) page
 2. Install and run the application
 3. Use the features as needed
-4. Restart Cursor to apply changes
+4. Enjoy your free trip
 
 ### 📦 Manual Installation
 
@@ -178,3 +219,22 @@ Welcome to join us and contribute code to ez-cursor-free together.
 <a href="https://github.com/GalacticDevOps/ez-cursor-free/graphs/contributors">
    <img src="https://contrib.rocks/image?repo=GalacticDevOps/ez-cursor-free" />
 </a>
+
+## 📄 License
+
+<details>
+<summary><b>MIT License</b></summary>
+
+Copyright (c) 2024
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+</details>
