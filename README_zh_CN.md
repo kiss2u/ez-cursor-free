@@ -1,7 +1,5 @@
 # 🚀 Ez2 Use Cursor Free Tools
 
-⚠️ This tool is only available to those who are unable to pay but urgently need to use it.
-
 <div align="center">
 
 <a title="MIT" target="_blank" href="https://github.com/GalacticDevOps/ez-cursor-free/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-orange.svg?style=flat-square"></a>
@@ -27,25 +25,25 @@
 </div>
 
 
-> ⚠️ **IMPORTANT NOTICE**
+> ⚠️ **重要提示**
 > 
 > This tool currently supports:
 > - ✅ Latest v0.45.x versions and below
 > - 🎯 [Cursor AI IDE Changelog](https://www.cursor.com/changelog)
 
-## Latest Version
+## 最新版本
 
 - Mac https://downloader.cursor.sh/mac/installer/universal  
 - Windows x64 https://downloader.cursor.sh/windows/nsis/x64  
 - Linux x64 https://downloader.cursor.sh/linux/appImage/x64  
 
-> 💾 **Download Cursor Hisotry(v0.44.x and below) Version**
+> 💾 **下载Cursor历史版本(v0.44.x及以下)**
 > 
 > https://downloader-cursor.deno.dev/history/
 
-## Download Links History
+## 下载链接历史
 
-| Version | Date | Mac Installer | Windows X64 Installer | Linux X64 Installer |
+| 版本 | 日期 | Mac | 64位Windows | 64位Linux |
 | --- | --- | --- | --- | --- |
 | 0.45.9 | 2025-02-04 | [Link](https://downloader.cursor.sh/builds/250202tgstl42dt/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/250202tgstl42dt/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/250202tgstl42dt/linux/appImage/x64) |
 | 0.45.8 | 2025-02-02 | [Link](https://downloader.cursor.sh/builds/250201b44xw1x2k/mac/installer/universal) | [Link](https://downloader.cursor.sh/builds/250201b44xw1x2k/windows/nsis/x64) | [Link](https://downloader.cursor.sh/builds/250201b44xw1x2k/linux/appImage/x64) |
@@ -64,65 +62,64 @@
 
 
 <details>
-<summary><b>🔒 Disable Auto Update</b></summary>
+<summary><b>🔒 禁用自动更新 </b></summary>
 
-> To prevent Cursor from automatically updating to unsupported new versions, you can choose to disable the auto-update feature.
+> 为了防止 Cursor 自动更新到不受支持的新版本，您可以选择禁用自动更新功能。
 
-### Method 1: Click the "Disable Auto Update" Button (Recommended)
+### 方法 1: 点击`禁用更新`按钮 (推荐)
 
 ![alt text](/screenshots/disable_update.png)
 
-### Method 2: Manual Disable
+### 方法 2: 手动禁用
 
 **Windows:**
-1. Close all Cursor processes
-2. Delete directory: `%LOCALAPPDATA%\cursor-updater`
-3. Create a file with the same name (without extension) in the same location
+1. 关闭所有Cursor进程
+2. 删除目录: `%LOCALAPPDATA%\cursor-updater`
+3. 在相同位置创建同一文件夹并设置为只读
 
 **macOS:**
 ```bash
 # Close Cursor
 pkill -f "Cursor"
-# Remove update directory and create blocking file
+# 删除更新目录并创建重复文件夹
 rm -rf ~/Library/Application\ Support/cursor-updater
 touch ~/Library/Application\ Support/cursor-updater
 ```
 
 **Linux:**
 ```bash
-# Close Cursor
+# 关闭Cursor
 pkill -f "Cursor"
-# Remove update directory and create blocking file
+# 删除更新目录并创建重复文件夹
 rm -rf ~/.config/cursor-updater
 touch ~/.config/cursor-updater
 ```
 
-> ⚠️ **Note:** After disabling automatic updates, you will need to manually download and install new versions. It is recommended to confirm that the new version is compatible before updating.
+> ⚠️ **Note:** 禁用自动更新后，您将需要手动下载并安装新版本。建议更新前确认新版本兼容。
 
 
 </details>
 
-> ⚠️ **NOTICE**
+> ⚠️ **警告**
 >
-> The project requires a python environment to run. Please ensure that python3.8 and above are installed.
+> 需要python环境才能运行。请确保安装了python3.8及以上版本。
 >
-> The program requires Google Chrome browser, please make sure to install Google Chrome browser
+> 需要安装Google Chrome浏览器，请确保安装Google Chrome浏览器
 
-If you don’t have Google Chrome, you can download Google Chrome from [here](https://www.google.com/intl/en_pk/chrome/), Or you can choose to use another browser. For details on how to use it, see [here](https://github.com/GalacticDevOps/ez-cursor-free/issues/10)
+如果您没有 Google Chrome，您可以从[此处](https://www.google.com/intl/en_pk/chrome/)下载 Google Chrome，或者您也可以选择使用其他浏览器。有关如何使用它的详细信息，请参阅[此处](https://github.com/GalacticDevOps/ez-cursor-free/issues/10)
 
 <div align="center">
 
 ![alt text](/screenshots/alert.png)
 
-If you encounter this problem, please click [here](https://sysin.org/blog/macos-if-crashes-when-opening/) to view the solution
-
+如果您遇到此问题，请点击[此处](https://sysin.org/blog/macos-if-crashes-when-opening/)查看解决方案
 </div>
 
-### 📝 Description
+### 📝 问题描述
 
-> When you encounter any of these messages:
+> 当你遇到以下提示信息：
 
-#### Issue 1: Trial Account Limit <p align="right"><a href="#issue1"><img src="https://img.shields.io/badge/Move%20to%20Solution-Blue?style=plastic" alt="Back To Top"></a></p>
+#### 问题 1: Trial Account Limit <p align="right"><a href="#issue1"><img src="https://img.shields.io/badge/Move%20to%20Solution-Blue?style=plastic" alt="Back To Top"></a></p>
 
 ```text
 Too many free trial accounts used on this machine.
@@ -131,7 +128,7 @@ to prevent abuse. Please let us know if you believe
 this is a mistake.
 ```
 
-#### Issue 2: API Key Limitation <p align="right"><a href="#issue2"><img src="https://img.shields.io/badge/Move%20to%20Solution-green?style=plastic" alt="Back To Top"></a></p>
+#### 问题 2: API Key Limitation <p align="right"><a href="#issue2"><img src="https://img.shields.io/badge/Move%20to%20Solution-green?style=plastic" alt="Back To Top"></a></p>
 
 ```text
 [New Issue]
@@ -141,9 +138,9 @@ Please disable API keys and use a Pro or Business subscription.
 Request ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
-#### Issue 3: Trial Request Limit
+#### 问题 3: Trial Request Limit
 
-> This indicates you've reached the usage limit during the VIP free trial period:
+> 这表明您已达到 `Pro Trail` 免费试用期内的使用限制：
 
 ```text
 You've reached your trial request limit.
@@ -151,41 +148,41 @@ You've reached your trial request limit.
 
 <p id="issue1"></p>
 
-### Solution - Trial Account Limit
+### 解决方案1 - Trial Account Limit
 
-#### Step 1: Quick Reset (Recommended)
+#### 步骤 1: 快速重置 (推荐)
 
-1. Close Cursor application
-2. Run the `ez-cursor-free` (see installation instructions below)
-3. Reopen Cursor to continue using
+1. 关闭`Cursor`(您也可以不关闭，程序自带关闭和重启激活功能)
+2. 运行`ez-cursor-free` (安装详情在下方)
+3. 重新打开`Cursor`并使用
 
-#### Step 2: Use ez-cursor-free, Click the "Auto Reset" Button
+#### 步骤 2: 使用ez-cursor-free，点击一键重置功能
 
 ![alt text](/screenshots/auto_reset.png)
 
-> Wait for the automatic reset to complete. If the waiting time is too long, it may be due to network problems. Please see solution 3.
+> 等待自动重置完成。如果等待时间过长，可能是由于网络问题。请参阅步骤 3。
 
-#### Step 3: Network Optimization
+#### 步骤 3: Network Optimization
 
-If the above solutions don't work, try:
+如果上述解决方案不起作用，请尝试：
 
-- Switch to low-latency nodes (Recommended regions: Japan, Singapore, US, Hong Kong)
-- Ensure network stability
-- Clear browser cache and retry
+- 切换至低延迟节点（推荐地区：日本、新加坡、美国、香港）
+- 确保网络稳定
+- 清除浏览器缓存并重试
 
 <p id="issue2"></p>
 
-### Solution -  API Key Limitation
+### 解决方案2 -  API Key Limitation
 
-#### Step: Uninstall Cursor Completely And Reinstall (API key Issue)
+#### 步骤: Uninstall Cursor Completely And Reinstall (API key Issue)
 
-1. Download [HiBit Uninstaller.exe](https://hibitsoft.ir/Uninstaller.html)
-2. Uninstall Cursor app completely
-3. Re-Install Cursor app
-4. Continue to Solution 1
+1. 下载 [HiBit Uninstaller.exe](https://hibitsoft.ir/Uninstaller.html)
+2. 彻底卸载`Cursor`
+3. 重新安装`Cursor`
+4. 回到解决方案1
 
 
-### 💻 System Support
+### 💻 支持的系统
 
 <div align="center">
 
@@ -194,47 +191,49 @@ If the above solutions don't work, try:
 **Linux**   ✅
 </div>
 
-## Installation
+## 安装
 
-1. Download the latest release from the [Releases](https://github.com/GalacticDevOps/ez-cursor-free/releases) page
-2. Install and run the application
-3. Use the features as needed
-4. Enjoy your free trip
+1. 点击[这里](https://github.com/GalacticDevOps/ez-cursor-free/releases)，从打开的页面中下载最新版本
+2. 安装并运行应用程序
+3. 根据需要使用功能
+4. 尽情享受吧！
 
-### 📦 Manual Installation
+### 📦 手动安装
 
-> Download the appropriate file for your system from [releases](https://github.com/GalacticDevOps/ez-cursor-free/releases/latest)
+> 点击[这里](https://github.com/GalacticDevOps/ez-cursor-free/releases/latest)，找到符合您当前系统的安装包
 
-### 🎉 Thanks
+### 🎉 致谢
 
-This project is developed based on the [gpt-cursor-auto](https://github.com/hmhm2022/gpt-cursor-auto) project, thank you for the contribution of the original author [@hmhm2022](https://github.com/hmhm2022).
+本项目基于[gpt-cursor-auto](https://github.com/hmhm2022/gpt-cursor-auto)项目开发，感谢原作者的贡献[@hmhm2022](https://github.com/hmhm2022).
 
-## 🧿 Contact Information
+## 🧿 联系方式
 
 <div align="center">
 
-[![Discord](https://img.shields.io/discord/1336288519836012608?label=Discord&logo=discord&style=plastic)](https://discord.gg/ZvC5NZdUBE)
+
 
 </div>
 
-## ⭐ Star History
+
+
+## ⭐ 项目统计
 
 [![Star History Chart](https://api.star-history.com/svg?repos=GalacticDevOps/ez-cursor-free&type=Date)](https://star-history.com/#GalacticDevOps/ez-cursor-free&Date)
 
 ![Alt](https://repobeats.axiom.co/api/embed/e093d035f86c7cc57f690c634df67bcf821455df.svg "Repobeats analytics image")
 
-## Contributors
+## 贡献者
 
-Thanks to the following people who contributed code to ez-cursor-free!
+感谢以下为ez-cursor-free贡献代码的人！
 
 <a href="https://github.com/GalacticDevOps/ez-cursor-free/graphs/contributors">
    <img src="https://contrib.rocks/image?repo=GalacticDevOps/ez-cursor-free" />
 </a>
 
-## 📄 License
+## 📄 许可证
 
 <details>
-<summary><b>MIT License</b></summary>
+<summary><b>MIT 许可证</b></summary>
 
 Copyright (c) 2024
 
